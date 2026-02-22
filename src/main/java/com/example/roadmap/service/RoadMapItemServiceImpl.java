@@ -1,13 +1,17 @@
 package com.example.roadmap.service;
 
+import com.example.roadmap.model.Comment;
 import com.example.roadmap.model.RoadMapItem;
+import com.example.roadmap.model.Tag;
 import com.example.roadmap.repository.RoadMapItemRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 public class RoadMapItemServiceImpl implements RoadMapItemService {
+
     private final RoadMapItemRepository repository;
 
     public RoadMapItemServiceImpl(RoadMapItemRepository repository) {
@@ -15,80 +19,97 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RoadMapItem> getAllItems() {
         return repository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RoadMapItem getItemById(Long id) {
-        RoadMapItem item = repository.findById(id);
-        if (item == null) {
-            throw new IllegalArgumentException("Item not found with id:" + id);
-        }
-        return item;
+        return repository.findById(id).orElse(null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RoadMapItem> getItemsByStatus(String status) {
-        if (status == null || status.isEmpty()) {
-            throw new IllegalArgumentException("Status cannot be empty");
-        }
         return repository.findByStatus(status);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RoadMapItem> getItemsByPriority(String priority) {
-        if (priority == null || priority.isEmpty()) {
-            throw new IllegalArgumentException("Priority cannot be empty");
-        }
         return repository.findByPriority(priority);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<RoadMapItem> getItemsByRoadMapId(Long roadMapId) {
+        return repository.findByRoadMapId(roadMapId);
+    }
+
+    @Override
+    @Transactional
     public RoadMapItem createItem(RoadMapItem item) {
-        validateItem(item);
         return repository.save(item);
     }
 
     @Override
+    @Transactional
     public RoadMapItem updateItem(Long id, RoadMapItem item) {
-        RoadMapItem existingItem = repository.findById(id);
-        if (existingItem == null) {
-            throw new IllegalArgumentException("Item not found with id:" + id);
+        RoadMapItem existing = repository.findById(id).orElse(null);
+        if (existing != null) {
+            existing.setTitle(item.getTitle());
+            existing.setDescription(item.getDescription());
+            existing.setStatus(item.getStatus());
+            existing.setPriority(item.getPriority());
+            existing.setStartDate(item.getStartDate());
+            existing.setTargetDate(item.getTargetDate());
+            return repository.save(existing);
         }
-
-        item.setId(id);
-        validateItem(item);
-        return repository.save(item);
+        return null;
     }
 
     @Override
+    @Transactional
     public void deleteItem(Long id) {
-        RoadMapItem item = repository.findById(id);
-        if (item == null) {
-            throw new IllegalArgumentException("Item not found with id:" + id);
-        }
-
-        if ("COMPLETED".equals(item.getStatus())) {
-            throw new IllegalStateException("Cannot delete completed task");
-        }
-
         repository.deleteById(id);
     }
 
-    private void validateItem(RoadMapItem item) {
-        if (item.getTitle() == null || item.getTitle().isEmpty()) {
-            throw new IllegalArgumentException("Title cannot be empty");
-        }
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoadMapItem> getAllWithTagsNPlus1() {
+        return repository.findAll();
+    }
 
-        String status = item.getStatus();
-        if (status == null || status.isEmpty()) {
-            throw new IllegalArgumentException("Status cannot be empty");
-        }
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoadMapItem> getAllWithTagsOptimized() {
+        return repository.findAllWithTags();
+    }
 
-        String priority = item.getPriority();
-        if (priority == null || priority.isEmpty()) {
-            throw new IllegalArgumentException("Priority cannot be empty");
+    @Override
+    @Transactional
+    public void saveItemWithTagsAndCommentsTransactional(RoadMapItem item, List<Tag> tags, List<Comment> comments) {
+        item.setTags(tags);
+        item.setComments(comments);
+        for (Tag tag : tags) {
+            tag.getItems().add(item);
         }
+        for (Comment comment : comments) {
+            comment.setRoadMapItem(item);
+        }
+        repository.save(item);
+        throw new RuntimeException("Test error: demonstrating rollback");
+    }
+
+    @Override
+    public void saveItemWithTagsNoTransaction(RoadMapItem item, List<Tag> tags) {
+        item.setTags(tags);
+        for (Tag tag : tags) {
+            tag.getItems().add(item);
+        }
+        repository.save(item);
+        throw new RuntimeException("Test error: no rollback");
     }
 }
