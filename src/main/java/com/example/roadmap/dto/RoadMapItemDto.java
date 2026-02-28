@@ -1,88 +1,83 @@
 package com.example.roadmap.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 
-public class RoadMapItemDTO {
-    private Long id;
-    private String title;
-    private String description;
-    private String status;
-    private String priority;
-    private LocalDate startDate;
-    private LocalDate targetDate;
+/**
+ * Data transfer object for RoadMapItem API.
+ */
+public class RoadMapItemDto {
 
-    public RoadMapItemDTO() {
-    }
+  private Long id;
 
-    public RoadMapItemDTO(Long id,
-                          String title,
-                          String description,
-                          String status,
-                          String priority,
-                          LocalDate startDate,
-                          LocalDate targetDate) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.status = status;
-        this.priority = priority;
-        this.startDate = startDate;
-        this.targetDate = targetDate;
-    }
+  @NotBlank
+  private String title;
 
-    public Long getId() {
-        return id;
-    }
+  private String description;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  @NotBlank
+  private String status;
 
-    public String getTitle() {
-        return title;
-    }
+  private LocalDate targetDate;
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+  public RoadMapItemDto() {
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  /**
+   * Creates DTO with all fields.
+   *
+   * @param id item id
+   * @param title item title
+   * @param description item description
+   * @param status item status
+   * @param targetDate target completion date
+   */
+  public RoadMapItemDto(Long id, String title, String description, String status,
+      LocalDate targetDate) {
+    this.id = id;
+    this.title = title;
+    this.description = description;
+    this.status = status;
+    this.targetDate = targetDate;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public String getStatus() {
-        return status;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getPriority() {
-        return priority;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public LocalDate getStartDate() {
-        return startDate;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
+  public String getStatus() {
+    return status;
+  }
 
-    public LocalDate getTargetDate() {
-        return targetDate;
-    }
+  public void setStatus(String status) {
+    this.status = status;
+  }
 
-    public void setTargetDate(LocalDate targetDate) {
-        this.targetDate = targetDate;
-    }
+  public LocalDate getTargetDate() {
+    return targetDate;
+  }
+
+  public void setTargetDate(LocalDate targetDate) {
+    this.targetDate = targetDate;
+  }
 }

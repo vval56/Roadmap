@@ -1,68 +1,72 @@
 package com.example.roadmap.dto;
 
 import com.example.roadmap.model.RoadMapItem;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoadMapItemMapper {
-    public static RoadMapItemDTO toDTO(RoadMapItem entity) {
-        if (entity == null) {
-            return null;
-        }
+/**
+ * Converts RoadMapItem model objects to DTO objects and back.
+ */
+public final class RoadMapItemMapper {
 
-        RoadMapItemDTO dto = new RoadMapItemDTO();
-        dto.setId(entity.getId());
-        dto.setStatus(entity.getStatus());
-        dto.setPriority(entity.getPriority());
-        dto.setDescription(entity.getDescription());
-        dto.setTitle(entity.getTitle());
-        dto.setStartDate(entity.getStartDate());
-        dto.setTargetDate(entity.getTargetDate());
+  private RoadMapItemMapper() {
+  }
 
-        return dto;
+  /**
+   * Converts model to DTO.
+   *
+   * @param item model entity
+   * @return DTO representation
+   */
+  public static RoadMapItemDto toDto(RoadMapItem item) {
+    if (item == null) {
+      return null;
     }
 
-    public static RoadMapItem toEntity(RoadMapItemDTO dto) {
-        if (dto == null) {
-            return null;
-        }
+    return new RoadMapItemDto(
+        item.getId(),
+        item.getTitle(),
+        item.getDescription(),
+        item.getStatus(),
+        item.getTargetDate()
+    );
+  }
 
-        RoadMapItem entity = new RoadMapItem();
-        entity.setId(dto.getId());
-        entity.setStatus(dto.getStatus());
-        entity.setPriority(dto.getPriority());
-        entity.setDescription(dto.getDescription());
-        entity.setTitle(dto.getTitle());
-        entity.setStartDate(dto.getStartDate());
-        entity.setTargetDate(dto.getTargetDate());
-
-        return entity;
+  /**
+   * Converts DTO to model.
+   *
+   * @param dto API DTO
+   * @return model representation
+   */
+  public static RoadMapItem toEntity(RoadMapItemDto dto) {
+    if (dto == null) {
+      return null;
     }
 
-    public static List<RoadMapItemDTO> toDTOList(List<RoadMapItem> entities) {
-        if (entities == null) {
-            return null;
-        }
+    return new RoadMapItem(
+        dto.getId(),
+        dto.getTitle(),
+        dto.getDescription(),
+        dto.getStatus(),
+        dto.getTargetDate()
+    );
+  }
 
-        List<RoadMapItemDTO> dtos = new ArrayList<>();
-        for (RoadMapItem entity : entities) {
-            dtos.add(toDTO(entity));
-        }
-
-        return dtos;
+  /**
+   * Converts list of model entities to list of DTOs.
+   *
+   * @param items model list
+   * @return DTO list
+   */
+  public static List<RoadMapItemDto> toDtoList(List<RoadMapItem> items) {
+    if (items == null) {
+      return List.of();
     }
 
-    public static List<RoadMapItem> toEntityList(List<RoadMapItemDTO> dtos) {
-        if (dtos == null) {
-            return null;
-        }
-
-        List<RoadMapItem> entities = new ArrayList<>();
-        for (RoadMapItemDTO dto : dtos) {
-            entities.add(toEntity(dto));
-        }
-
-        return entities;
+    List<RoadMapItemDto> dtos = new ArrayList<>();
+    for (RoadMapItem item : items) {
+      dtos.add(toDto(item));
     }
+    return dtos;
+  }
 }
