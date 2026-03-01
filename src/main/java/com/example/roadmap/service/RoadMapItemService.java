@@ -1,18 +1,27 @@
 package com.example.roadmap.service;
 
-import com.example.roadmap.model.RoadMapItem;
+import com.example.roadmap.dto.RoadMapItemDto;
+import com.example.roadmap.dto.RoadMapItemWithTagsDto;
 import java.util.List;
 
 /**
- * Service contract for business logic around roadmap items.
+ * Service contract for roadmap items.
  */
 public interface RoadMapItemService {
 
-  List<RoadMapItem> getAllItems();
+  RoadMapItemDto create(RoadMapItemDto dto);
 
-  RoadMapItem getItemById(Long id);
+  RoadMapItemDto getById(Long id);
 
-  List<RoadMapItem> getItemsByStatus(String status);
+  List<RoadMapItemDto> getAll();
 
-  RoadMapItem createItem(RoadMapItem item);
+  RoadMapItemDto update(Long id, RoadMapItemDto dto);
+
+  void delete(Long id);
+
+  List<RoadMapItemWithTagsDto> getAllWithNplusOne();
+
+  List<RoadMapItemWithTagsDto> getAllWithEntityGraph();
+
+  List<RoadMapItemWithTagsDto> getAllWithFetchJoin();
 }

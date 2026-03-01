@@ -2,12 +2,11 @@ package com.example.roadmap;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
- * Entry point for the Spring Boot application.
+ * RoadMap2026Application component.
  */
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@SpringBootApplication
 public class RoadMap2026Application {
 
   public static void main(String[] args) {

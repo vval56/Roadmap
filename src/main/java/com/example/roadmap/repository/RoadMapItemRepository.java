@@ -2,20 +2,18 @@ package com.example.roadmap.repository;
 
 import com.example.roadmap.model.RoadMapItem;
 import java.util.List;
-import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 /**
- * Repository contract for roadmap items.
+ * Repository for roadmap items.
  */
-public interface RoadMapItemRepository {
+public interface RoadMapItemRepository extends JpaRepository<RoadMapItem, Long> {
+  @EntityGraph(attributePaths = "tags")
+  @Query("select i from RoadMapItem i")
+  List<RoadMapItem> findAllWithTagsEntityGraph();
 
-  List<RoadMapItem> findAll();
-
-  Optional<RoadMapItem> findById(Long id);
-
-  List<RoadMapItem> findByStatus(String status);
-
-  RoadMapItem save(RoadMapItem item);
-
-  void deleteById(Long id);
+  @Query("select distinct i from RoadMapItem i left join fetch i.tags")
+  List<RoadMapItem> findAllWithTagsFetchJoin();
 }

@@ -1,11 +1,13 @@
 package com.example.roadmap.dto;
 
 import com.example.roadmap.model.RoadMapItem;
+import com.example.roadmap.model.Tag;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
- * Converts RoadMapItem model objects to DTO objects and back.
+ * Mapper for roadmap item DTOs.
  */
 public final class RoadMapItemMapper {
 
@@ -13,60 +15,56 @@ public final class RoadMapItemMapper {
   }
 
   /**
-   * Converts model to DTO.
+   * Maps item entity to DTO.
    *
-   * @param item model entity
-   * @return DTO representation
+   * @param entity item entity
+   * @return mapped DTO
    */
-  public static RoadMapItemDto toDto(RoadMapItem item) {
-    if (item == null) {
-      return null;
-    }
+  public static RoadMapItemDto toDto(RoadMapItem entity) {
+    RoadMapItemDto dto = new RoadMapItemDto();
+    dto.setId(entity.getId());
+    dto.setTitle(entity.getTitle());
+    dto.setDetails(entity.getDetails());
+    dto.setStatus(entity.getStatus());
+    dto.setRoadMapId(entity.getRoadMap().getId());
 
-    return new RoadMapItemDto(
-        item.getId(),
-        item.getTitle(),
-        item.getDescription(),
-        item.getStatus(),
-        item.getTargetDate()
-    );
+    LinkedHashSet<Long> tagIds = new LinkedHashSet<>();
+    for (Tag tag : entity.getTags()) {
+      tagIds.add(tag.getId());
+    }
+    dto.setTagIds(tagIds);
+    return dto;
   }
 
   /**
-   * Converts DTO to model.
+   * Copies DTO fields to entity.
    *
-   * @param dto API DTO
-   * @return model representation
+   * @param dto source DTO
+   * @param entity target entity
    */
-  public static RoadMapItem toEntity(RoadMapItemDto dto) {
-    if (dto == null) {
-      return null;
-    }
-
-    return new RoadMapItem(
-        dto.getId(),
-        dto.getTitle(),
-        dto.getDescription(),
-        dto.getStatus(),
-        dto.getTargetDate()
-    );
+  public static void copyToEntity(RoadMapItemDto dto, RoadMapItem entity) {
+    entity.setTitle(dto.getTitle());
+    entity.setDetails(dto.getDetails());
+    entity.setStatus(dto.getStatus());
   }
 
   /**
-   * Converts list of model entities to list of DTOs.
+   * Maps item entity to DTO used for N+1 demo.
    *
-   * @param items model list
-   * @return DTO list
+   * @param entity item entity
+   * @return mapped DTO
    */
-  public static List<RoadMapItemDto> toDtoList(List<RoadMapItem> items) {
-    if (items == null) {
-      return List.of();
-    }
+  public static RoadMapItemWithTagsDto toWithTagsDto(RoadMapItem entity) {
+    RoadMapItemWithTagsDto dto = new RoadMapItemWithTagsDto();
+    dto.setId(entity.getId());
+    dto.setTitle(entity.getTitle());
+    dto.setStatus(entity.getStatus());
 
-    List<RoadMapItemDto> dtos = new ArrayList<>();
-    for (RoadMapItem item : items) {
-      dtos.add(toDto(item));
+    List<String> tags = new ArrayList<>();
+    for (Tag tag : entity.getTags()) {
+      tags.add(tag.getName());
     }
-    return dtos;
+    dto.setTags(tags);
+    return dto;
   }
 }

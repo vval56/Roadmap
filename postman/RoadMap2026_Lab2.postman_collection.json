@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "RoadMap2026 Lab2 API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"},
+    {"key": "userId", "value": "1"},
+    {"key": "roadMapId", "value": "1"},
+    {"key": "itemId", "value": "1"},
+    {"key": "tagId", "value": "1"},
+    {"key": "commentId", "value": "1"}
+  ],
+  "item": [
+    {
+      "name": "Users - Get All",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/users"
+      }
+    },
+    {
+      "name": "RoadMaps - Get All",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/roadmaps"
+      }
+    },
+    {
+      "name": "RoadMapItems - Get All",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/roadmap-items"
+      }
+    },
+    {
+      "name": "Tags - Get All",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/tags"
+      }
+    },
+    {
+      "name": "Comments - Get All",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/comments"
+      }
+    },
+    {
+      "name": "N+1 - Default",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/roadmap-items/n-plus-one"
+      }
+    },
+    {
+      "name": "N+1 - EntityGraph",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/roadmap-items/entity-graph"
+      }
+    },
+    {
+      "name": "N+1 - Fetch Join",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/roadmap-items/fetch-join"
+      }
+    },
+    {
+      "name": "Transaction - Without @Transactional",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": "{{baseUrl}}/api/transactions/without-transactional",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo Without\",\n  \"firstItemTitle\": \"Saved item\",\n  \"secondItemTitle\": \"Not used\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Transaction - With @Transactional",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": "{{baseUrl}}/api/transactions/with-transactional",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo With\",\n  \"firstItemTitle\": \"Will rollback 1\",\n  \"secondItemTitle\": \"Will rollback 2\"\n}"
+        }
+      }
+    }
+  ]
+}
