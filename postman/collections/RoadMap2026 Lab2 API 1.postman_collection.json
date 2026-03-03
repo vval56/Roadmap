@@ -1,0 +1,1006 @@
+{
+  "info": {
+    "_postman_id": "493434a7-2c28-4f4f-90bf-23d8d786430a",
+    "name": "RoadMap2026 Lab2 API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Users - Get All",
+          "id": "e3c2a10f-56b7-48a8-9d21-558eee1be7f8",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Get By Id",
+          "id": "eef9530a-3065-4d1b-8cee-8c238db8e94e",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Create",
+          "id": "b370000c-57ec-4c1f-aae1-65d50ea8882e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Vladislav Mogilny\",\n  \"email\": \"vladislav@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Update PUT",
+          "id": "a0571089-3725-4354-a37b-59f5cc097dbf",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Vladislav Mogilny\",\n  \"email\": \"vladislav@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Update PATCH",
+          "id": "26ebdbca-737a-4de9-afaf-6f41b8839776",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Vladislav Mogilny\",\n  \"email\": \"vladislav@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Delete",
+          "id": "8908d56e-2ee9-420e-ae46-18e5f8339ce1",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "b1ba92f1-2000-4b54-8d8c-274845cda7e0"
+    },
+    {
+      "name": "RoadMaps",
+      "item": [
+        {
+          "name": "RoadMaps - Get All",
+          "id": "7e54178a-2d6f-4245-97ff-ec8595700b0e",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Get By Id",
+          "id": "087f9ecb-550c-44de-a5bf-f367125e2dd3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Create",
+          "id": "0b2df6bf-3d95-4e80-b2da-f9492aef0e7f",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java Backend Roadmap\",\n  \"description\": \"Preparation roadmap for semester labs\",\n  \"ownerId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Update PUT",
+          "id": "1924c78c-6faf-4c03-b963-6a78e3b1183d",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java Backend Roadmap\",\n  \"description\": \"Preparation roadmap for semester labs\",\n  \"ownerId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Update PATCH",
+          "id": "8aedfd19-6cfa-4fdf-b8a4-9351f75a1033",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java Backend Roadmap\",\n  \"description\": \"Preparation roadmap for semester labs\",\n  \"ownerId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Delete",
+          "id": "7c43d095-f1fd-4bb5-b057-55699d4ffe78",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Get By Title",
+          "id": "c0d9ca52-079f-4e22-b9fe-ed25d75b1d33",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps?title={{roadMapTitle}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "{{roadMapTitle}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "b7237303-9944-43d1-9e2d-e53b099d115d"
+    },
+    {
+      "name": "RoadMapItems",
+      "item": [
+        {
+          "name": "RoadMapItems - Get All",
+          "id": "9aacce13-02e1-4410-a80a-8eedbae4dde4",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Get By Id",
+          "id": "48926353-c806-4f01-bc45-727cbd13032f",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Create",
+          "id": "59ce134d-c3df-426c-98b7-c4b636797b00",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Update PUT",
+          "id": "270059c6-2b0a-430c-9bcd-c53369264691",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Update PATCH",
+          "id": "f6f7bbd0-0923-4515-b656-579ad18b316b",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Delete",
+          "id": "0b47f339-3017-46b3-b181-cf6e2bcfe827",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "e670f1be-13d9-4ed9-a007-9764a0841eab"
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Tags - Get All",
+          "id": "920ed4a5-6ac5-4a81-aece-bae046312935",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Get By Id",
+          "id": "e7025c77-dc4a-48ed-8433-899f72457d91",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Create",
+          "id": "65df760d-1517-4f43-bbbd-bf1b8f9d4c1a",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"spring\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tags",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Update PUT",
+          "id": "8d9e660b-6b4f-4d43-8d00-bb1e93e0f78b",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"spring\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Update PATCH",
+          "id": "194dac2b-8fc4-4d31-b8e3-51a3237eb288",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"spring\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Delete",
+          "id": "f912c72c-3428-41bd-83e3-e560934a6513",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "edb16194-235a-4cf8-aa1c-1c572ec34e1e"
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Comments - Get All",
+          "id": "579a96e2-0718-4a01-9d64-31cbcd209497",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Get By Id",
+          "id": "6bb1a089-5501-4dea-b2e8-23bb522a2242",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Create",
+          "id": "fd47241a-92c3-4833-877e-7a54e457b17e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Need extra practice with ManyToMany.\",\n  \"itemId\": 1,\n  \"authorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Update PUT",
+          "id": "3e0ba5fb-b5ee-4ab3-ac4e-880ff9de5630",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Need extra practice with ManyToMany.\",\n  \"itemId\": 1,\n  \"authorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Update PATCH",
+          "id": "73e9dcb0-2e11-4962-9635-510b0f495ef5",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Need extra practice with ManyToMany.\",\n  \"itemId\": 1,\n  \"authorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Delete",
+          "id": "5f41c65a-5c77-467d-8b19-ba0048c62779",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "7dd37b70-bfca-4298-b827-7f72052e1bdf"
+    },
+    {
+      "name": "N+1",
+      "item": [
+        {
+          "name": "N+1 - Default",
+          "id": "f7ab02eb-ad7e-48e7-acc8-67edccfc648c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/n-plus-one",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "n-plus-one"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "N+1 - EntityGraph",
+          "id": "7dd16b86-fd1f-4ca0-9bff-09da4cdecc36",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/entity-graph",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "entity-graph"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "N+1 - Fetch Join",
+          "id": "eebdaf9c-4e82-486d-858e-b6762e97e051",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/fetch-join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "fetch-join"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "e02955ad-4483-49c9-9679-f96e8d633355"
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Transaction - Without @Transactional",
+          "id": "fe86a4f1-4551-4067-a69e-605ab82e1d85",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo Without\",\n  \"firstItemTitle\": \"Saved item\",\n  \"secondItemTitle\": \"Not used\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/without-transactional",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "without-transactional"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transaction - With @Transactional",
+          "id": "4931247b-b726-41bc-a248-7a5ff2fb33bf",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo With\",\n  \"firstItemTitle\": \"Will rollback 1\",\n  \"secondItemTitle\": \"Will rollback 2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/with-transactional",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "with-transactional"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transaction - Verify Partial Save (title)",
+          "id": "20c139c2-ce5e-40e5-8403-4aeb86b0aa10",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps?title=Tx Demo Without",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "Tx Demo Without"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transaction - Verify Rollback (title)",
+          "id": "a388525c-ec03-4bbe-9718-147ddfcc3192",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps?title=Tx Demo With",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "Tx Demo With"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "cd15881f-0763-4a22-b632-753aecdfac42"
+    }
+  ],
+  "variable": [
+    {
+      "id": "cf3727fb-bff6-4fa5-9d2e-edd3f2a9f590",
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "id": "4590a56b-008a-4787-a238-deb0c3a6f3b9",
+      "key": "userId",
+      "value": "1"
+    },
+    {
+      "id": "9c028f69-5312-4431-843b-66582d386f96",
+      "key": "roadMapId",
+      "value": "1"
+    },
+    {
+      "id": "630274b4-b272-496c-96ca-d7b3ecaa7fdf",
+      "key": "itemId",
+      "value": "1"
+    },
+    {
+      "id": "6db59105-ac47-4fb0-92d2-dbc5ccc20120",
+      "key": "tagId",
+      "value": "1"
+    },
+    {
+      "id": "1cd69a53-c4f2-48df-97fb-4d0f4fb1b551",
+      "key": "commentId",
+      "value": "1"
+    },
+    {
+      "id": "07f53653-4af3-47d0-8a68-a789a5e32a45",
+      "key": "roadMapTitle",
+      "value": "Java Backend Roadmap"
+    }
+  ]
+}
