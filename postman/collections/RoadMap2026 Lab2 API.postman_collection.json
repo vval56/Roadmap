@@ -6,249 +6,949 @@
   },
   "item": [
     {
-      "name": "Users - Get All",
-      "id": "581120e7-f1b8-448c-8bc9-c55c7ea8d5dc",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "RoadMaps - Get All",
-      "id": "97aa99cf-1a6c-4e37-a01d-60576cff2516",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/roadmaps",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "roadmaps"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "RoadMapItems - Get All",
-      "id": "45e5987b-a3cf-4116-a54d-7cb6b80784ee",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/roadmap-items",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "roadmap-items"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Tags - Get All",
-      "id": "0e3a0b74-c4d8-4f23-8451-f06f4b1e4626",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/tags",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tags"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Comments - Get All",
-      "id": "83dfd19d-24ac-4795-a3db-aeb4275d2983",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/comments",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "comments"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "N+1 - Default",
-      "id": "0ad0fd76-6598-44f0-9b20-c0de077a8105",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/roadmap-items/n-plus-one",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "roadmap-items",
-            "n-plus-one"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "N+1 - EntityGraph",
-      "id": "ed98f657-21c1-4201-be19-e31980771def",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/roadmap-items/entity-graph",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "roadmap-items",
-            "entity-graph"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "N+1 - Fetch Join",
-      "id": "350d0786-87e6-476b-a312-e8f338df40ff",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/roadmap-items/fetch-join",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "roadmap-items",
-            "fetch-join"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Transaction - Without @Transactional",
-      "id": "4b4bae35-9ebf-4ae1-9754-ddc62ca2ddb2",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo Without\",\n  \"firstItemTitle\": \"Saved item\",\n  \"secondItemTitle\": \"Not used\"\n}"
+      "name": "Users",
+      "item": [
+        {
+          "name": "Users - Get All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{baseUrl}}/api/transactions/without-transactional",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transactions",
-            "without-transactional"
-          ]
+        {
+          "name": "Users - Get By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Vladislav Mogilny\",\n  \"email\": \"vladislav@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Update PUT",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Vladislav Mogilny\",\n  \"email\": \"vladislav@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Update PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Vladislav Mogilny\",\n  \"email\": \"vladislav@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Users - Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "Transaction - With @Transactional",
-      "id": "33e736d4-dc90-45f6-b36e-1490875961eb",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo With\",\n  \"firstItemTitle\": \"Will rollback 1\",\n  \"secondItemTitle\": \"Will rollback 2\"\n}"
+      "name": "RoadMaps",
+      "item": [
+        {
+          "name": "RoadMaps - Get All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ]
+            }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{baseUrl}}/api/transactions/with-transactional",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transactions",
-            "with-transactional"
-          ]
+        {
+          "name": "RoadMaps - Get By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java Backend Roadmap\",\n  \"description\": \"Preparation roadmap for semester labs\",\n  \"ownerId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Update PUT",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java Backend Roadmap\",\n  \"description\": \"Preparation roadmap for semester labs\",\n  \"ownerId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Update PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java Backend Roadmap\",\n  \"description\": \"Preparation roadmap for semester labs\",\n  \"ownerId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps/{{roadMapId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps",
+                "{{roadMapId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMaps - Get By Title",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps?title={{roadMapTitle}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "{{roadMapTitle}}"
+                }
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
+    },
+    {
+      "name": "RoadMapItems",
+      "item": [
+        {
+          "name": "RoadMapItems - Get All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Get By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Update PUT",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Update PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RoadMapItems - Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "{{itemId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Tags - Get All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Get By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"spring\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Update PUT",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"spring\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Update PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"spring\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tags - Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Comments - Get All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Get By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Need extra practice with ManyToMany.\",\n  \"itemId\": 1,\n  \"authorId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Update PUT",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Need extra practice with ManyToMany.\",\n  \"itemId\": 1,\n  \"authorId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Update PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Need extra practice with ManyToMany.\",\n  \"itemId\": 1,\n  \"authorId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Comments - Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "N+1",
+      "item": [
+        {
+          "name": "N+1 - Default",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/n-plus-one",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "n-plus-one"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "N+1 - EntityGraph",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/entity-graph",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "entity-graph"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "N+1 - Fetch Join",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmap-items/fetch-join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmap-items",
+                "fetch-join"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Transaction - Without @Transactional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/without-transactional",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "without-transactional"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo Without\",\n  \"firstItemTitle\": \"Saved item\",\n  \"secondItemTitle\": \"Not used\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transaction - With @Transactional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/with-transactional",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "with-transactional"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": 1,\n  \"roadMapTitle\": \"Tx Demo With\",\n  \"firstItemTitle\": \"Will rollback 1\",\n  \"secondItemTitle\": \"Will rollback 2\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transaction - Verify Partial Save (title)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps?title=Tx Demo Without",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "Tx Demo Without"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transaction - Verify Rollback (title)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roadmaps?title=Tx Demo With",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roadmaps"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "Tx Demo With"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
     {
-      "id": "317ea142-8fcb-453d-a028-54c143b2e006",
       "key": "baseUrl",
       "value": "http://localhost:8080"
     },
     {
-      "id": "bc0bdf89-d029-4d21-8ec5-b2467ad81130",
       "key": "userId",
       "value": "1"
     },
     {
-      "id": "6fac7467-c25e-4ab8-a961-ffb2ed8ffdee",
       "key": "roadMapId",
       "value": "1"
     },
     {
-      "id": "0dce51e5-e7ba-44eb-a7a8-029d84b4573f",
       "key": "itemId",
       "value": "1"
     },
     {
-      "id": "3858f4a6-71cf-46c7-aa8d-3bd895f14195",
       "key": "tagId",
       "value": "1"
     },
     {
-      "id": "5f60a702-a4c6-48be-be8c-d701dfef02af",
       "key": "commentId",
       "value": "1"
+    },
+    {
+      "key": "roadMapTitle",
+      "value": "Java Backend Roadmap"
     }
   ]
 }

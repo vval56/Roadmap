@@ -12,6 +12,8 @@ public interface RoadMapService {
 
   RoadMapDto getById(Long id);
 
+  RoadMapDto getByTitle(String title);
+
   List<RoadMapDto> getAll();
 
   RoadMapDto update(Long id, RoadMapDto dto);

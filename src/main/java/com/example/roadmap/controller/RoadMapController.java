@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +36,11 @@ public class RoadMapController {
   @GetMapping("/{id}")
   public RoadMapDto getById(@PathVariable Long id) {
     return roadMapService.getById(id);
+  }
+
+  @GetMapping(params = "title")
+  public RoadMapDto getByTitle(@RequestParam String title) {
+    return roadMapService.getByTitle(title);
   }
 
   @GetMapping

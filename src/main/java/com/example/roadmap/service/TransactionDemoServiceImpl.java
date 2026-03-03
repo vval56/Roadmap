@@ -21,12 +21,8 @@ public class TransactionDemoServiceImpl implements TransactionDemoService {
   @Override
   public TransactionDemoResultDto runWithoutTransactional(TransactionDemoRequestDto requestDto) {
     TransactionDemoResultDto result = createBeforeSnapshot();
-    try {
-      transactionWorkerService.saveWithoutTransactionalAndFail(requestDto);
-      result.setMessage("No exception happened");
-    } catch (RuntimeException ex) {
-      result.setMessage(ex.getMessage());
-    }
+    transactionWorkerService.saveWithoutTransactionalAndFail(requestDto);
+    result.setMessage("No exception happened");
     fillAfterSnapshot(result);
     return result;
   }
@@ -34,12 +30,8 @@ public class TransactionDemoServiceImpl implements TransactionDemoService {
   @Override
   public TransactionDemoResultDto runWithTransactional(TransactionDemoRequestDto requestDto) {
     TransactionDemoResultDto result = createBeforeSnapshot();
-    try {
-      transactionWorkerService.saveWithTransactionalAndFail(requestDto);
-      result.setMessage("No exception happened");
-    } catch (RuntimeException ex) {
-      result.setMessage(ex.getMessage());
-    }
+    transactionWorkerService.saveWithTransactionalAndFail(requestDto);
+    result.setMessage("No exception happened");
     fillAfterSnapshot(result);
     return result;
   }

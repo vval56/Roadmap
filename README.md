@@ -213,6 +213,63 @@ erDiagram
     }
 ```
 
+### 5.1 DBML для dbdiagram.io (удобно для печати)
+Скопируй код ниже в https://dbdiagram.io:
+
+```dbml
+Project RoadMap2026 {
+  database_type: "PostgreSQL"
+}
+
+Enum item_status {
+  PLANNED
+  IN_PROGRESS
+  DONE
+}
+
+Table app_users {
+  id bigint [pk, increment]
+  full_name varchar(120) [not null]
+  email varchar(160) [not null, unique]
+}
+
+Table roadmaps {
+  id bigint [pk, increment]
+  title varchar(120) [not null]
+  description varchar(500)
+  owner_id bigint [not null, ref: > app_users.id]
+}
+
+Table roadmap_items {
+  id bigint [pk, increment]
+  title varchar(150) [not null]
+  details varchar(800)
+  status item_status [not null]
+  roadmap_id bigint [not null, ref: > roadmaps.id]
+}
+
+Table tags {
+  id bigint [pk, increment]
+  name varchar(80) [not null, unique]
+}
+
+Table comments {
+  id bigint [pk, increment]
+  content varchar(600) [not null]
+  item_id bigint [not null, ref: > roadmap_items.id]
+  author_id bigint [not null, ref: > app_users.id]
+}
+
+Table roadmap_item_tag {
+  roadmap_item_id bigint [not null, ref: > roadmap_items.id]
+  tag_id bigint [not null, ref: > tags.id]
+
+  indexes {
+    (roadmap_item_id, tag_id) [pk]
+  }
+}
+```
+
 ## 6. Обоснование CascadeType / FetchType
 ### 6.1 `RoadMap -> RoadMapItem`
 - `cascade = CascadeType.ALL`
@@ -315,5 +372,4 @@ erDiagram
 Интерпретация результата:
 - `without-transactional`: `roadMapsAfter/itemsAfter` увеличиваются (частичное сохранение).
 - `with-transactional`: значения после ошибки не увеличиваются (полный rollback).
-
 

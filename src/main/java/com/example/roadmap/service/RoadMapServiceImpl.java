@@ -38,6 +38,15 @@ public class RoadMapServiceImpl implements RoadMapService {
   }
 
   @Override
+  public RoadMapDto getByTitle(String title) {
+    List<RoadMap> roadMaps = roadMapRepository.findByTitle(title);
+    if (roadMaps.isEmpty()) {
+      throw new ResourceNotFoundException("RoadMap with title=" + title + " not found");
+    }
+    return RoadMapMapper.toDto(roadMaps.getFirst());
+  }
+
+  @Override
   public List<RoadMapDto> getAll() {
     List<RoadMapDto> result = new ArrayList<>();
     for (RoadMap roadMap : roadMapRepository.findAll()) {
