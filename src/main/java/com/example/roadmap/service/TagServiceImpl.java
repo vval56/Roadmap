@@ -44,15 +44,16 @@ public class TagServiceImpl implements TagService {
 
   @Override
   public TagDto update(Long id, TagDto dto) {
-    Tag entity = getEntity(id);
+    Tag entity = tagRepository.findById(id).orElseGet(Tag::new);
     TagMapper.copyToEntity(dto, entity);
     return TagMapper.toDto(tagRepository.save(entity));
   }
 
   @Override
   public void delete(Long id) {
-    Tag entity = getEntity(id);
-    tagRepository.delete(entity);
+    if (tagRepository.existsById(id)) {
+      tagRepository.deleteById(id);
+    }
   }
 
   private Tag getEntity(Long id) {

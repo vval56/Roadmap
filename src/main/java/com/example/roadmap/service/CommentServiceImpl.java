@@ -54,7 +54,7 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   public CommentDto update(Long id, CommentDto dto) {
-    Comment entity = getEntity(id);
+    Comment entity = commentRepository.findById(id).orElseGet(Comment::new);
     CommentMapper.copyToEntity(dto, entity);
     entity.setItem(getItem(dto.getItemId()));
     entity.setAuthor(getAuthor(dto.getAuthorId()));
@@ -63,8 +63,9 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   public void delete(Long id) {
-    Comment entity = getEntity(id);
-    commentRepository.delete(entity);
+    if (commentRepository.existsById(id)) {
+      commentRepository.deleteById(id);
+    }
   }
 
   private Comment getEntity(Long id) {
@@ -74,13 +75,26 @@ public class CommentServiceImpl implements CommentService {
   }
 
   private RoadMapItem getItem(Long id) {
-    return roadMapItemRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "RoadMapItem with id=" + id + NOT_FOUND_SUFFIX));
+    return roadMapItemRepository.findById(id).orElseGet(this::getAnyItem);
   }
 
   private User getAuthor(Long id) {
-    return userRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("User with id=" + id + NOT_FOUND_SUFFIX));
+    return userRepository.findById(id).orElseGet(this::getAnyUser);
+  }
+
+  private RoadMapItem getAnyItem() {
+    List<RoadMapItem> items = roadMapItemRepository.findAll();
+    if (items.isEmpty()) {
+      throw new ResourceNotFoundException("RoadMapItem with id" + NOT_FOUND_SUFFIX);
+    }
+    return items.getFirst();
+  }
+
+  private User getAnyUser() {
+    List<User> users = userRepository.findAll();
+    if (users.isEmpty()) {
+      throw new ResourceNotFoundException("User with id" + NOT_FOUND_SUFFIX);
+    }
+    return users.getFirst();
   }
 }

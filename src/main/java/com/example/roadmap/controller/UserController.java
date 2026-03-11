@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,6 +45,11 @@ public class UserController {
 
   @PutMapping("/{id}")
   public UserDto update(@PathVariable Long id, @Valid @RequestBody UserDto dto) {
+    return userService.update(id, dto);
+  }
+
+  @PatchMapping("/{id}")
+  public UserDto patch(@PathVariable Long id, @Valid @RequestBody UserDto dto) {
     return userService.update(id, dto);
   }
 

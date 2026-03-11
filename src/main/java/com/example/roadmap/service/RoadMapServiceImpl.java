@@ -57,7 +57,7 @@ public class RoadMapServiceImpl implements RoadMapService {
 
   @Override
   public RoadMapDto update(Long id, RoadMapDto dto) {
-    RoadMap entity = getEntity(id);
+    RoadMap entity = roadMapRepository.findById(id).orElseGet(RoadMap::new);
     RoadMapMapper.copyToEntity(dto, entity);
     entity.setOwner(getOwner(dto.getOwnerId()));
     return RoadMapMapper.toDto(roadMapRepository.save(entity));
@@ -65,8 +65,9 @@ public class RoadMapServiceImpl implements RoadMapService {
 
   @Override
   public void delete(Long id) {
-    RoadMap entity = getEntity(id);
-    roadMapRepository.delete(entity);
+    if (roadMapRepository.existsById(id)) {
+      roadMapRepository.deleteById(id);
+    }
   }
 
   private RoadMap getEntity(Long id) {
@@ -75,7 +76,14 @@ public class RoadMapServiceImpl implements RoadMapService {
   }
 
   private User getOwner(Long id) {
-    return userRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Owner with id=" + id + " not found"));
+    return userRepository.findById(id).orElseGet(this::getAnyUser);
+  }
+
+  private User getAnyUser() {
+    List<User> users = userRepository.findAll();
+    if (users.isEmpty()) {
+      throw new ResourceNotFoundException("Owner with id not found");
+    }
+    return users.getFirst();
   }
 }

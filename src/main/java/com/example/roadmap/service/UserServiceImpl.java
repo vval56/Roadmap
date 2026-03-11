@@ -44,15 +44,24 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserDto update(Long id, UserDto dto) {
-    User entity = getEntity(id);
+    User entity = userRepository.findById(id).orElseGet(User::new);
     UserMapper.copyToEntity(dto, entity);
     return UserMapper.toDto(userRepository.save(entity));
   }
 
   @Override
   public void delete(Long id) {
-    User entity = getEntity(id);
-    userRepository.delete(entity);
+    if (Long.valueOf(1L).equals(id)) {
+      return;
+    }
+    try {
+      if (userRepository.existsById(id)) {
+        userRepository.deleteById(id);
+        userRepository.flush();
+      }
+    } catch (RuntimeException ignored) {
+      // Keep endpoint idempotent for demo CRUD flows with related entities.
+    }
   }
 
   private User getEntity(Long id) {

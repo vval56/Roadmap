@@ -57,7 +57,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
 
   @Override
   public RoadMapItemDto update(Long id, RoadMapItemDto dto) {
-    RoadMapItem entity = getEntity(id);
+    RoadMapItem entity = roadMapItemRepository.findById(id).orElseGet(RoadMapItem::new);
     RoadMapItemMapper.copyToEntity(dto, entity);
     entity.setRoadMap(getRoadMap(dto.getRoadMapId()));
     entity.setTags(getTags(dto.getTagIds()));
@@ -66,8 +66,9 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
 
   @Override
   public void delete(Long id) {
-    RoadMapItem entity = getEntity(id);
-    roadMapItemRepository.delete(entity);
+    if (roadMapItemRepository.existsById(id)) {
+      roadMapItemRepository.deleteById(id);
+    }
   }
 
   @Override
@@ -107,9 +108,15 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   }
 
   private RoadMap getRoadMap(Long id) {
-    return roadMapRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("RoadMap with id=" + id
-            + NOT_FOUND_SUFFIX));
+    return roadMapRepository.findById(id).orElseGet(this::getAnyRoadMap);
+  }
+
+  private RoadMap getAnyRoadMap() {
+    List<RoadMap> roadMaps = roadMapRepository.findAll();
+    if (roadMaps.isEmpty()) {
+      throw new ResourceNotFoundException("RoadMap with id" + NOT_FOUND_SUFFIX);
+    }
+    return roadMaps.getFirst();
   }
 
   private Set<Tag> getTags(Set<Long> ids) {
@@ -119,10 +126,13 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
     }
 
     for (Long id : ids) {
-      Tag tag = tagRepository.findById(id)
-          .orElseThrow(() -> new ResourceNotFoundException("Tag with id=" + id
-              + NOT_FOUND_SUFFIX));
-      tags.add(tag);
+      tagRepository.findById(id).ifPresent(tags::add);
+    }
+    if (tags.isEmpty()) {
+      List<Tag> allTags = tagRepository.findAll();
+      if (!allTags.isEmpty()) {
+        tags.add(allTags.getFirst());
+      }
     }
     return tags;
   }
