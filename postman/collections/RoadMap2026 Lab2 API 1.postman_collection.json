@@ -387,7 +387,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"parentItemId\": {{parentItemId}},\n  \"tagIds\": [\n    1\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/roadmap-items",
@@ -415,7 +415,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"parentItemId\": {{parentItemId}},\n  \"tagIds\": [\n    1\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
@@ -444,7 +444,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"parentItemId\": {{parentItemId}},\n  \"tagIds\": [\n    1\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/roadmap-items/{{itemId}}",
@@ -986,6 +986,10 @@
       "id": "630274b4-b272-496c-96ca-d7b3ecaa7fdf",
       "key": "itemId",
       "value": "1"
+    },
+    {
+      "key": "parentItemId",
+      "value": "null"
     },
     {
       "id": "6db59105-ac47-4fb0-92d2-dbc5ccc20120",

@@ -379,7 +379,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"parentItemId\": {{parentItemId}},\n  \"tagIds\": [\n    1\n  ]\n}"
             }
           },
           "response": []
@@ -407,7 +407,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"parentItemId\": {{parentItemId}},\n  \"tagIds\": [\n    1\n  ]\n}"
             }
           },
           "response": []
@@ -435,7 +435,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"tagIds\": [\n    1\n  ]\n}"
+              "raw": "{\n  \"title\": \"Learn JPA basics\",\n  \"details\": \"Entity mapping, repositories, relationships\",\n  \"status\": \"IN_PROGRESS\",\n  \"roadMapId\": 1,\n  \"parentItemId\": {{parentItemId}},\n  \"tagIds\": [\n    1\n  ]\n}"
             }
           },
           "response": []
@@ -937,6 +937,10 @@
     {
       "key": "itemId",
       "value": "1"
+    },
+    {
+      "key": "parentItemId",
+      "value": "null"
     },
     {
       "key": "tagId",
