@@ -27,6 +27,7 @@ public final class RoadMapItemMapper {
     dto.setDetails(entity.getDetails());
     dto.setStatus(entity.getStatus());
     dto.setRoadMapId(entity.getRoadMap().getId());
+    dto.setParentItemId(entity.getParentItem() != null ? entity.getParentItem().getId() : null);
 
     LinkedHashSet<Long> tagIds = new LinkedHashSet<>();
     for (Tag tag : entity.getTags()) {

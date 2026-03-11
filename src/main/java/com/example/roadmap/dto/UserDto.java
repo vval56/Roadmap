@@ -17,7 +17,10 @@ public class UserDto {
   private Long id;
 
   @NotBlank
-  private String fullName;
+  private String firstName;
+
+  @NotBlank
+  private String lastName;
 
   @Email
   @NotBlank

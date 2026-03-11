@@ -19,7 +19,8 @@ public final class UserMapper {
   public static UserDto toDto(User entity) {
     UserDto dto = new UserDto();
     dto.setId(entity.getId());
-    dto.setFullName(entity.getFullName());
+    dto.setFirstName(entity.getFirstName());
+    dto.setLastName(entity.getLastName());
     dto.setEmail(entity.getEmail());
     return dto;
   }
@@ -31,7 +32,8 @@ public final class UserMapper {
    * @param entity target entity
    */
   public static void copyToEntity(UserDto dto, User entity) {
-    entity.setFullName(dto.getFullName());
+    entity.setFirstName(dto.getFirstName());
+    entity.setLastName(dto.getLastName());
     entity.setEmail(dto.getEmail());
   }
 }

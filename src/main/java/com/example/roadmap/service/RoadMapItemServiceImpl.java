@@ -37,6 +37,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
     RoadMapItem entity = new RoadMapItem();
     RoadMapItemMapper.copyToEntity(dto, entity);
     entity.setRoadMap(getRoadMap(dto.getRoadMapId()));
+    entity.setParentItem(getParentItem(dto.getParentItemId(), null));
     entity.setTags(getTags(dto.getTagIds()));
     return RoadMapItemMapper.toDto(roadMapItemRepository.save(entity));
   }
@@ -60,6 +61,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
     RoadMapItem entity = roadMapItemRepository.findById(id).orElseGet(RoadMapItem::new);
     RoadMapItemMapper.copyToEntity(dto, entity);
     entity.setRoadMap(getRoadMap(dto.getRoadMapId()));
+    entity.setParentItem(getParentItem(dto.getParentItemId(), id));
     entity.setTags(getTags(dto.getTagIds()));
     return RoadMapItemMapper.toDto(roadMapItemRepository.save(entity));
   }
@@ -135,5 +137,17 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
       }
     }
     return tags;
+  }
+
+  private RoadMapItem getParentItem(Long parentItemId, Long currentItemId) {
+    if (parentItemId == null) {
+      return null;
+    }
+    if (currentItemId != null && currentItemId.equals(parentItemId)) {
+      return null;
+    }
+    return roadMapItemRepository.findById(parentItemId).orElseThrow(
+        () -> new ResourceNotFoundException(
+            "Parent RoadMapItem with id=" + parentItemId + NOT_FOUND_SUFFIX));
   }
 }

@@ -40,7 +40,8 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     User user = new User();
-    user.setFullName("Vladislav Mogilny");
+    user.setFirstName("Vladislav");
+    user.setLastName("Mogilny");
     user.setEmail("vladislav@example.com");
     user = userRepository.save(user);
 

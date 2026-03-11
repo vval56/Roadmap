@@ -34,8 +34,11 @@ public class User {
   @EqualsAndHashCode.Include
   private Long id;
 
-  @Column(nullable = false, length = 120)
-  private String fullName;
+  @Column(length = 120)
+  private String firstName;
+
+  @Column(length = 120)
+  private String lastName;
 
   @Column(nullable = false, unique = true, length = 160)
   private String email;

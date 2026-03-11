@@ -30,5 +30,7 @@ public class RoadMapItemDto {
   @NotNull
   private Long roadMapId;
 
+  private Long parentItemId;
+
   private Set<Long> tagIds = new LinkedHashSet<>();
 }

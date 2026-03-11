@@ -31,7 +31,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"roadMap", "comments", "tags"})
+@ToString(exclude = {"roadMap", "comments", "tags", "parentItem", "childItems"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class RoadMapItem {
 
@@ -53,6 +53,13 @@ public class RoadMapItem {
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "roadmap_id", nullable = false)
   private RoadMap roadMap;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "parent_item_id")
+  private RoadMapItem parentItem;
+
+  @OneToMany(mappedBy = "parentItem", fetch = FetchType.LAZY)
+  private Set<RoadMapItem> childItems = new LinkedHashSet<>();
 
   @OneToMany(mappedBy = "item", cascade = CascadeType.ALL,
       orphanRemoval = true, fetch = FetchType.LAZY)
