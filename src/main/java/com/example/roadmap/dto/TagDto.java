@@ -5,9 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * TagDto component.
- */
 @Getter
 @Setter
 @NoArgsConstructor

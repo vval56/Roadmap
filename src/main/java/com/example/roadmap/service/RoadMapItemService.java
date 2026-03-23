@@ -2,11 +2,11 @@ package com.example.roadmap.service;
 
 import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
+import com.example.roadmap.model.ItemStatus;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-/**
- * Service contract for roadmap items.
- */
 public interface RoadMapItemService {
 
   RoadMapItemDto create(RoadMapItemDto dto);
@@ -24,4 +24,12 @@ public interface RoadMapItemService {
   List<RoadMapItemWithTagsDto> getAllWithEntityGraph();
 
   List<RoadMapItemWithTagsDto> getAllWithFetchJoin();
+
+  Page<RoadMapItemDto> searchWithJpql(String ownerEmail, String roadMapTitle,
+                                      String parentTitle, String tagName,
+                                      ItemStatus status, Pageable pageable);
+
+  Page<RoadMapItemDto> searchWithNative(String ownerEmail, String roadMapTitle,
+                                        String parentTitle, String tagName,
+                                        ItemStatus status, Pageable pageable);
 }

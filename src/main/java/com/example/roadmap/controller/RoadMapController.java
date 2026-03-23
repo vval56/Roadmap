@@ -18,9 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * RoadMapController component.
- */
 @RestController
 @RequestMapping("/api/roadmaps")
 @RequiredArgsConstructor

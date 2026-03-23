@@ -4,9 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * TransactionDemoResultDto component.
- */
 @Getter
 @Setter
 @NoArgsConstructor

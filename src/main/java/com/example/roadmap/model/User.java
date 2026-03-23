@@ -17,9 +17,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 
-/**
- * User component.
- */
 @Entity
 @Table(name = "app_users")
 @Getter

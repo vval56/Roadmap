@@ -7,9 +7,6 @@ import com.example.roadmap.repository.RoadMapRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * TransactionDemoServiceImpl component.
- */
 @Service
 @RequiredArgsConstructor
 public class TransactionDemoServiceImpl implements TransactionDemoService {

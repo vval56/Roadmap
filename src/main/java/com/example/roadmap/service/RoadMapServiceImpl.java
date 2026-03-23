@@ -1,5 +1,6 @@
 package com.example.roadmap.service;
 
+import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.dto.RoadMapDto;
 import com.example.roadmap.dto.RoadMapMapper;
 import com.example.roadmap.exception.ResourceNotFoundException;
@@ -13,9 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * RoadMapServiceImpl component.
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -23,13 +21,16 @@ public class RoadMapServiceImpl implements RoadMapService {
 
   private final RoadMapRepository roadMapRepository;
   private final UserRepository userRepository;
+  private final RoadMapItemSearchIndexService searchIndexService;
 
   @Override
   public RoadMapDto create(RoadMapDto dto) {
     RoadMap entity = new RoadMap();
     RoadMapMapper.copyToEntity(dto, entity);
     entity.setOwner(getOwner(dto.getOwnerId()));
-    return RoadMapMapper.toDto(roadMapRepository.save(entity));
+    RoadMapDto saved = RoadMapMapper.toDto(roadMapRepository.save(entity));
+    searchIndexService.invalidateAll();
+    return saved;
   }
 
   @Override
@@ -60,13 +61,16 @@ public class RoadMapServiceImpl implements RoadMapService {
     RoadMap entity = roadMapRepository.findById(id).orElseGet(RoadMap::new);
     RoadMapMapper.copyToEntity(dto, entity);
     entity.setOwner(getOwner(dto.getOwnerId()));
-    return RoadMapMapper.toDto(roadMapRepository.save(entity));
+    RoadMapDto saved = RoadMapMapper.toDto(roadMapRepository.save(entity));
+    searchIndexService.invalidateAll();
+    return saved;
   }
 
   @Override
   public void delete(Long id) {
     if (roadMapRepository.existsById(id)) {
       roadMapRepository.deleteById(id);
+      searchIndexService.invalidateAll();
     }
   }
 

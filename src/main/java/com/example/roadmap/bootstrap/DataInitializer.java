@@ -18,9 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 
-/**
- * DataInitializer component.
- */
 @Component
 @Profile("!test")
 @RequiredArgsConstructor

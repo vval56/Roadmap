@@ -2,10 +2,14 @@ package com.example.roadmap.controller;
 
 import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
+import com.example.roadmap.model.ItemStatus;
 import com.example.roadmap.service.RoadMapItemService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * RoadMapItemController component.
- */
 @RestController
 @RequestMapping("/api/roadmap-items")
 @RequiredArgsConstructor
@@ -73,5 +75,29 @@ public class RoadMapItemController {
   @GetMapping("/fetch-join")
   public List<RoadMapItemWithTagsDto> optimizedWithFetchJoin() {
     return roadMapItemService.getAllWithFetchJoin();
+  }
+
+  @GetMapping("/search/jpql")
+  public Page<RoadMapItemDto> searchWithJpql(
+      @RequestParam(required = false) String ownerEmail,
+      @RequestParam(required = false) String roadMapTitle,
+      @RequestParam(required = false) String parentTitle,
+      @RequestParam(required = false) String tagName,
+      @RequestParam(required = false) ItemStatus status,
+      @PageableDefault(size = 10) Pageable pageable) {
+    return roadMapItemService.searchWithJpql(
+        ownerEmail, roadMapTitle, parentTitle, tagName, status, pageable);
+  }
+
+  @GetMapping("/search/native")
+  public Page<RoadMapItemDto> searchWithNative(
+      @RequestParam(required = false) String ownerEmail,
+      @RequestParam(required = false) String roadMapTitle,
+      @RequestParam(required = false) String parentTitle,
+      @RequestParam(required = false) String tagName,
+      @RequestParam(required = false) ItemStatus status,
+      @PageableDefault(size = 10) Pageable pageable) {
+    return roadMapItemService.searchWithNative(
+        ownerEmail, roadMapTitle, parentTitle, tagName, status, pageable);
   }
 }

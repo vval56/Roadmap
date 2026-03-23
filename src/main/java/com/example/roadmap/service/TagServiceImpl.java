@@ -1,5 +1,6 @@
 package com.example.roadmap.service;
 
+import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.dto.TagDto;
 import com.example.roadmap.dto.TagMapper;
 import com.example.roadmap.exception.ResourceNotFoundException;
@@ -11,21 +12,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * TagServiceImpl component.
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class TagServiceImpl implements TagService {
 
   private final TagRepository tagRepository;
+  private final RoadMapItemSearchIndexService searchIndexService;
 
   @Override
   public TagDto create(TagDto dto) {
     Tag entity = new Tag();
     TagMapper.copyToEntity(dto, entity);
-    return TagMapper.toDto(tagRepository.save(entity));
+    TagDto saved = TagMapper.toDto(tagRepository.save(entity));
+    searchIndexService.invalidateAll();
+    return saved;
   }
 
   @Override
@@ -46,13 +47,16 @@ public class TagServiceImpl implements TagService {
   public TagDto update(Long id, TagDto dto) {
     Tag entity = tagRepository.findById(id).orElseGet(Tag::new);
     TagMapper.copyToEntity(dto, entity);
-    return TagMapper.toDto(tagRepository.save(entity));
+    TagDto saved = TagMapper.toDto(tagRepository.save(entity));
+    searchIndexService.invalidateAll();
+    return saved;
   }
 
   @Override
   public void delete(Long id) {
     if (tagRepository.existsById(id)) {
       tagRepository.deleteById(id);
+      searchIndexService.invalidateAll();
     }
   }
 

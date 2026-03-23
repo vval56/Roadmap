@@ -9,9 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * RoadMapItemDto component.
- */
 @Getter
 @Setter
 @NoArgsConstructor

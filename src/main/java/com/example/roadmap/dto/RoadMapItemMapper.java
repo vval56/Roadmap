@@ -6,21 +6,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-/**
- * Mapper for roadmap item DTOs.
- */
 public final class RoadMapItemMapper {
 
   private RoadMapItemMapper() {
   }
 
-  /**
-   * Maps item entity to DTO.
-   *
-   * @param entity item entity
-   * @return mapped DTO
-   */
-  public static RoadMapItemDto toDto(RoadMapItem entity) {
+    public static RoadMapItemDto toDto(RoadMapItem entity) {
     RoadMapItemDto dto = new RoadMapItemDto();
     dto.setId(entity.getId());
     dto.setTitle(entity.getTitle());
@@ -37,25 +28,13 @@ public final class RoadMapItemMapper {
     return dto;
   }
 
-  /**
-   * Copies DTO fields to entity.
-   *
-   * @param dto source DTO
-   * @param entity target entity
-   */
-  public static void copyToEntity(RoadMapItemDto dto, RoadMapItem entity) {
+    public static void copyToEntity(RoadMapItemDto dto, RoadMapItem entity) {
     entity.setTitle(dto.getTitle());
     entity.setDetails(dto.getDetails());
     entity.setStatus(dto.getStatus());
   }
 
-  /**
-   * Maps item entity to DTO used for N+1 demo.
-   *
-   * @param entity item entity
-   * @return mapped DTO
-   */
-  public static RoadMapItemWithTagsDto toWithTagsDto(RoadMapItem entity) {
+    public static RoadMapItemWithTagsDto toWithTagsDto(RoadMapItem entity) {
     RoadMapItemWithTagsDto dto = new RoadMapItemWithTagsDto();
     dto.setId(entity.getId());
     dto.setTitle(entity.getTitle());

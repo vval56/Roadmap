@@ -3,9 +3,6 @@ package com.example.roadmap.service;
 import com.example.roadmap.dto.RoadMapDto;
 import java.util.List;
 
-/**
- * Service contract for roadmaps.
- */
 public interface RoadMapService {
 
   RoadMapDto create(RoadMapDto dto);

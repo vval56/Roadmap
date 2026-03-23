@@ -1,5 +1,6 @@
 package com.example.roadmap.service;
 
+import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.dto.UserDto;
 import com.example.roadmap.dto.UserMapper;
 import com.example.roadmap.exception.ResourceNotFoundException;
@@ -11,21 +12,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * UserServiceImpl component.
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
+  private final RoadMapItemSearchIndexService searchIndexService;
 
   @Override
   public UserDto create(UserDto dto) {
     User entity = new User();
     UserMapper.copyToEntity(dto, entity);
-    return UserMapper.toDto(userRepository.save(entity));
+    UserDto saved = UserMapper.toDto(userRepository.save(entity));
+    searchIndexService.invalidateAll();
+    return saved;
   }
 
   @Override
@@ -46,7 +47,9 @@ public class UserServiceImpl implements UserService {
   public UserDto update(Long id, UserDto dto) {
     User entity = userRepository.findById(id).orElseGet(User::new);
     UserMapper.copyToEntity(dto, entity);
-    return UserMapper.toDto(userRepository.save(entity));
+    UserDto saved = UserMapper.toDto(userRepository.save(entity));
+    searchIndexService.invalidateAll();
+    return saved;
   }
 
   @Override
@@ -58,9 +61,9 @@ public class UserServiceImpl implements UserService {
       if (userRepository.existsById(id)) {
         userRepository.deleteById(id);
         userRepository.flush();
+        searchIndexService.invalidateAll();
       }
     } catch (RuntimeException ignored) {
-      // Keep endpoint idempotent for demo CRUD flows with related entities.
     }
   }
 

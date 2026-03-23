@@ -23,9 +23,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * RoadMapItem component.
- */
 @Entity
 @Table(name = "roadmap_items")
 @Getter

@@ -6,9 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * UserDto component.
- */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -15,9 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * Comment component.
- */
 @Entity
 @Table(name = "comments")
 @Getter

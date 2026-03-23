@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-/**
- * TransactionDemoRequestDto component.
- */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -16,9 +16,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * Tag component.
- */
 @Entity
 @Table(name = "tags")
 @Getter
