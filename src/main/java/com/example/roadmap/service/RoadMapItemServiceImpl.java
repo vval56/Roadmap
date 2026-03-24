@@ -224,7 +224,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   private RoadMapItemSearchKey buildKey(String queryType, String ownerEmail,
                                         String roadMapTitle, String parentTitle,
                                         String tagName, ItemStatus status, Pageable pageable) {
-    return new RoadMapItemSearchKey(
+    return RoadMapItemSearchKey.of(
         queryType,
         ownerEmail,
         roadMapTitle,

@@ -63,7 +63,8 @@ public class UserServiceImpl implements UserService {
         userRepository.flush();
         searchIndexService.invalidateAll();
       }
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException ex) {
+      return;
     }
   }
 

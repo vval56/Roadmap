@@ -19,16 +19,16 @@ public class RoadMapItemSearchIndexService {
   public synchronized Optional<Page<RoadMapItemDto>> get(RoadMapItemSearchKey key) {
     Page<RoadMapItemDto> value = cache.get(key);
     if (value == null) {
-      log.info("Search index MISS: key={}, size={}", key, cache.size());
+      log.info("Search index MISS: cacheEntries={}", cache.size());
       return Optional.empty();
     }
-    log.info("Search index HIT: key={}, size={}", key, cache.size());
+    log.info("Search index HIT: cacheEntries={}", cache.size());
     return Optional.of(value);
   }
 
   public synchronized void put(RoadMapItemSearchKey key, Page<RoadMapItemDto> value) {
     cache.put(key, value);
-    log.info("Search index STORE: key={}, size={}", key, cache.size());
+    log.info("Search index STORE: cacheEntries={}", cache.size());
   }
 
   public synchronized void invalidateAll() {

@@ -14,18 +14,25 @@ public final class RoadMapItemSearchKey {
   private final int size;
   private final String sort;
 
-  public RoadMapItemSearchKey(String queryType, String ownerEmail, String roadMapTitle,
-                              String parentTitle, String tagName,
-                              String status, int page, int size, String sort) {
-    this.queryType = normalize(queryType);
-    this.ownerEmail = normalize(ownerEmail);
-    this.roadMapTitle = normalize(roadMapTitle);
-    this.parentTitle = normalize(parentTitle);
-    this.tagName = normalize(tagName);
-    this.status = normalize(status);
-    this.page = page;
-    this.size = size;
-    this.sort = normalize(sort);
+  private RoadMapItemSearchKey(SearchCriteria criteria, PageDescriptor pageDescriptor) {
+    this.queryType = criteria.queryType;
+    this.ownerEmail = criteria.ownerEmail;
+    this.roadMapTitle = criteria.roadMapTitle;
+    this.parentTitle = criteria.parentTitle;
+    this.tagName = criteria.tagName;
+    this.status = criteria.status;
+    this.page = pageDescriptor.page;
+    this.size = pageDescriptor.size;
+    this.sort = pageDescriptor.sort;
+  }
+
+  public static RoadMapItemSearchKey of(String queryType, String ownerEmail, String roadMapTitle,
+                                        String parentTitle, String tagName, String status,
+                                        int page, int size, String sort) {
+    return new RoadMapItemSearchKey(
+        new SearchCriteria(queryType, ownerEmail, roadMapTitle, parentTitle, tagName, status),
+        new PageDescriptor(page, size, sort)
+    );
   }
 
   private static String normalize(String value) {
@@ -61,18 +68,34 @@ public final class RoadMapItemSearchKey {
         tagName, status, page, size, sort);
   }
 
-  @Override
-  public String toString() {
-    return "RoadMapItemSearchKey{"
-        + "queryType='" + queryType + '\''
-        + ", ownerEmail='" + ownerEmail + '\''
-        + ", roadMapTitle='" + roadMapTitle + '\''
-        + ", parentTitle='" + parentTitle + '\''
-        + ", tagName='" + tagName + '\''
-        + ", status='" + status + '\''
-        + ", page=" + page
-        + ", size=" + size
-        + ", sort='" + sort + '\''
-        + '}';
+  private static final class SearchCriteria {
+    private final String queryType;
+    private final String ownerEmail;
+    private final String roadMapTitle;
+    private final String parentTitle;
+    private final String tagName;
+    private final String status;
+
+    private SearchCriteria(String queryType, String ownerEmail, String roadMapTitle,
+                           String parentTitle, String tagName, String status) {
+      this.queryType = normalize(queryType);
+      this.ownerEmail = normalize(ownerEmail);
+      this.roadMapTitle = normalize(roadMapTitle);
+      this.parentTitle = normalize(parentTitle);
+      this.tagName = normalize(tagName);
+      this.status = normalize(status);
+    }
+  }
+
+  private static final class PageDescriptor {
+    private final int page;
+    private final int size;
+    private final String sort;
+
+    private PageDescriptor(int page, int size, String sort) {
+      this.page = page;
+      this.size = size;
+      this.sort = normalize(sort);
+    }
   }
 }
