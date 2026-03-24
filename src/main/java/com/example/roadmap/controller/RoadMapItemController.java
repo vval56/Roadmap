@@ -46,6 +46,11 @@ public class RoadMapItemController {
     return roadMapItemService.getAll();
   }
 
+  @GetMapping("/page")
+  public Page<RoadMapItemDto> getPage(@PageableDefault(size = 5) Pageable pageable) {
+    return roadMapItemService.getPage(pageable);
+  }
+
   @PutMapping("/{id}")
   public RoadMapItemDto update(@PathVariable Long id, @Valid @RequestBody RoadMapItemDto dto) {
     return roadMapItemService.update(id, dto);
@@ -78,26 +83,24 @@ public class RoadMapItemController {
   }
 
   @GetMapping("/search/jpql")
-  public Page<RoadMapItemDto> searchWithJpql(
+  public List<RoadMapItemDto> searchWithJpql(
       @RequestParam(required = false) String ownerEmail,
       @RequestParam(required = false) String roadMapTitle,
       @RequestParam(required = false) String parentTitle,
       @RequestParam(required = false) String tagName,
-      @RequestParam(required = false) ItemStatus status,
-      @PageableDefault(size = 10) Pageable pageable) {
+      @RequestParam(required = false) ItemStatus status) {
     return roadMapItemService.searchWithJpql(
-        ownerEmail, roadMapTitle, parentTitle, tagName, status, pageable);
+        ownerEmail, roadMapTitle, parentTitle, tagName, status);
   }
 
   @GetMapping("/search/native")
-  public Page<RoadMapItemDto> searchWithNative(
+  public List<RoadMapItemDto> searchWithNative(
       @RequestParam(required = false) String ownerEmail,
       @RequestParam(required = false) String roadMapTitle,
       @RequestParam(required = false) String parentTitle,
       @RequestParam(required = false) String tagName,
-      @RequestParam(required = false) ItemStatus status,
-      @PageableDefault(size = 10) Pageable pageable) {
+      @RequestParam(required = false) ItemStatus status) {
     return roadMapItemService.searchWithNative(
-        ownerEmail, roadMapTitle, parentTitle, tagName, status, pageable);
+        ownerEmail, roadMapTitle, parentTitle, tagName, status);
   }
 }

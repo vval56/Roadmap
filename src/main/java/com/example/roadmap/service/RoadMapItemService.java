@@ -15,6 +15,8 @@ public interface RoadMapItemService {
 
   List<RoadMapItemDto> getAll();
 
+  Page<RoadMapItemDto> getPage(Pageable pageable);
+
   RoadMapItemDto update(Long id, RoadMapItemDto dto);
 
   void delete(Long id);
@@ -25,11 +27,11 @@ public interface RoadMapItemService {
 
   List<RoadMapItemWithTagsDto> getAllWithFetchJoin();
 
-  Page<RoadMapItemDto> searchWithJpql(String ownerEmail, String roadMapTitle,
+  List<RoadMapItemDto> searchWithJpql(String ownerEmail, String roadMapTitle,
                                       String parentTitle, String tagName,
-                                      ItemStatus status, Pageable pageable);
+                                      ItemStatus status);
 
-  Page<RoadMapItemDto> searchWithNative(String ownerEmail, String roadMapTitle,
+  List<RoadMapItemDto> searchWithNative(String ownerEmail, String roadMapTitle,
                                         String parentTitle, String tagName,
-                                        ItemStatus status, Pageable pageable);
+                                        ItemStatus status);
 }

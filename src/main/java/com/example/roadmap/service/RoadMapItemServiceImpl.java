@@ -64,6 +64,12 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public Page<RoadMapItemDto> getPage(Pageable pageable) {
+    return roadMapItemRepository.findAll(normalizePageable(pageable)).map(RoadMapItemMapper::toDto);
+  }
+
+  @Override
   public RoadMapItemDto update(Long id, RoadMapItemDto dto) {
     RoadMapItem entity = roadMapItemRepository.findById(id).orElseGet(RoadMapItem::new);
     RoadMapItemMapper.copyToEntity(dto, entity);
@@ -115,48 +121,50 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<RoadMapItemDto> searchWithJpql(String ownerEmail, String roadMapTitle,
+  public List<RoadMapItemDto> searchWithJpql(String ownerEmail, String roadMapTitle,
                                              String parentTitle, String tagName,
-                                             ItemStatus status, Pageable pageable) {
-    Pageable normalizedPageable = normalizePageable(pageable);
+                                             ItemStatus status) {
     RoadMapItemSearchKey key = buildKey(
-        "jpql", ownerEmail, roadMapTitle, parentTitle, tagName, status, normalizedPageable);
+        "jpql", ownerEmail, roadMapTitle, parentTitle, tagName, status,
+        PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.ASC, "id")));
 
     return searchIndexService.get(key).orElseGet(() -> {
-      Page<RoadMapItemDto> result = roadMapItemRepository.searchByNestedFiltersJpql(
-          normalizeText(ownerEmail),
-          normalizeText(roadMapTitle),
-          normalizeText(parentTitle),
-          normalizeText(tagName),
-          status,
-          normalizedPageable
-      ).map(RoadMapItemMapper::toDto);
+      Page<RoadMapItemDto> result = new org.springframework.data.domain.PageImpl<>(
+          roadMapItemRepository.searchByNestedFiltersJpql(
+              normalizeJpqlText(ownerEmail),
+              normalizeJpqlText(roadMapTitle),
+              normalizeJpqlText(parentTitle),
+              normalizeJpqlText(tagName),
+              status
+          ).stream().map(RoadMapItemMapper::toDto).toList()
+      );
       searchIndexService.put(key, result);
       return result;
-    });
+    }).getContent();
   }
 
   @Override
   @Transactional(readOnly = true)
-  public Page<RoadMapItemDto> searchWithNative(String ownerEmail, String roadMapTitle,
+  public List<RoadMapItemDto> searchWithNative(String ownerEmail, String roadMapTitle,
                                                String parentTitle, String tagName,
-                                               ItemStatus status, Pageable pageable) {
-    Pageable normalizedPageable = normalizePageable(pageable);
+                                               ItemStatus status) {
     RoadMapItemSearchKey key = buildKey(
-        "native", ownerEmail, roadMapTitle, parentTitle, tagName, status, normalizedPageable);
+        "native", ownerEmail, roadMapTitle, parentTitle, tagName, status,
+        PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.ASC, "id")));
 
     return searchIndexService.get(key).orElseGet(() -> {
-      Page<RoadMapItemDto> result = roadMapItemRepository.searchByNestedFiltersNative(
-          normalizeText(ownerEmail),
-          normalizeText(roadMapTitle),
-          normalizeText(parentTitle),
-          normalizeText(tagName),
-          status == null ? null : status.name(),
-          normalizedPageable
-      ).map(RoadMapItemMapper::toDto);
+      Page<RoadMapItemDto> result = new org.springframework.data.domain.PageImpl<>(
+          roadMapItemRepository.searchByNestedFiltersNative(
+              normalizeText(ownerEmail),
+              normalizeText(roadMapTitle),
+              normalizeText(parentTitle),
+              normalizeText(tagName),
+              status == null ? null : status.name()
+          ).stream().map(RoadMapItemMapper::toDto).toList()
+      );
       searchIndexService.put(key, result);
       return result;
-    });
+    }).getContent();
   }
 
   private RoadMapItem getEntity(Long id) {
@@ -232,6 +240,13 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   private String normalizeText(String value) {
     if (value == null || value.isBlank()) {
       return null;
+    }
+    return value.trim();
+  }
+
+  private String normalizeJpqlText(String value) {
+    if (value == null || value.isBlank()) {
+      return "";
     }
     return value.trim();
   }
