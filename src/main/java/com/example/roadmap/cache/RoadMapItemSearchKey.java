@@ -60,4 +60,19 @@ public final class RoadMapItemSearchKey {
     return Objects.hash(queryType, ownerEmail, roadMapTitle, parentTitle,
         tagName, status, page, size, sort);
   }
+
+  @Override
+  public String toString() {
+    return "RoadMapItemSearchKey{"
+        + "queryType='" + queryType + '\''
+        + ", ownerEmail='" + ownerEmail + '\''
+        + ", roadMapTitle='" + roadMapTitle + '\''
+        + ", parentTitle='" + parentTitle + '\''
+        + ", tagName='" + tagName + '\''
+        + ", status='" + status + '\''
+        + ", page=" + page
+        + ", size=" + size
+        + ", sort='" + sort + '\''
+        + '}';
+  }
 }
