@@ -1,5 +1,6 @@
 package com.example.roadmap.controller;
 
+import com.example.roadmap.dto.PageResponseDto;
 import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
 import com.example.roadmap.model.ItemStatus;
@@ -47,8 +48,8 @@ public class RoadMapItemController {
   }
 
   @GetMapping("/page")
-  public Page<RoadMapItemDto> getPage(@PageableDefault(size = 5) Pageable pageable) {
-    return roadMapItemService.getPage(pageable);
+  public PageResponseDto<RoadMapItemDto> getPage(@PageableDefault(size = 5) Pageable pageable) {
+    return PageResponseDto.from(roadMapItemService.getPage(pageable));
   }
 
   @PutMapping("/{id}")
