@@ -45,7 +45,7 @@ public class TagServiceImpl implements TagService {
 
   @Override
   public TagDto update(Long id, TagDto dto) {
-    Tag entity = tagRepository.findById(id).orElseGet(Tag::new);
+    Tag entity = getEntity(id);
     TagMapper.copyToEntity(dto, entity);
     TagDto saved = TagMapper.toDto(tagRepository.save(entity));
     searchIndexService.invalidateAll();

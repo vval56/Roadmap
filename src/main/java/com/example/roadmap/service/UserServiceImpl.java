@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserDto update(Long id, UserDto dto) {
-    User entity = userRepository.findById(id).orElseGet(User::new);
+    User entity = getEntity(id);
     UserMapper.copyToEntity(dto, entity);
     UserDto saved = UserMapper.toDto(userRepository.save(entity));
     searchIndexService.invalidateAll();

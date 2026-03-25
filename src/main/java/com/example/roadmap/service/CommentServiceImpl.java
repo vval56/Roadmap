@@ -51,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
 
   @Override
   public CommentDto update(Long id, CommentDto dto) {
-    Comment entity = commentRepository.findById(id).orElseGet(Comment::new);
+    Comment entity = getEntity(id);
     CommentMapper.copyToEntity(dto, entity);
     entity.setItem(getItem(dto.getItemId()));
     entity.setAuthor(getAuthor(dto.getAuthorId()));

@@ -58,7 +58,7 @@ public class RoadMapServiceImpl implements RoadMapService {
 
   @Override
   public RoadMapDto update(Long id, RoadMapDto dto) {
-    RoadMap entity = roadMapRepository.findById(id).orElseGet(RoadMap::new);
+    RoadMap entity = getEntity(id);
     RoadMapMapper.copyToEntity(dto, entity);
     entity.setOwner(getOwner(dto.getOwnerId()));
     RoadMapDto saved = RoadMapMapper.toDto(roadMapRepository.save(entity));

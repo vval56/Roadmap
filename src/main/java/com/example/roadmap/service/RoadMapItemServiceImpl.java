@@ -71,7 +71,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
 
   @Override
   public RoadMapItemDto update(Long id, RoadMapItemDto dto) {
-    RoadMapItem entity = roadMapItemRepository.findById(id).orElseGet(RoadMapItem::new);
+    RoadMapItem entity = getEntity(id);
     RoadMapItemMapper.copyToEntity(dto, entity);
     entity.setRoadMap(getRoadMap(dto.getRoadMapId()));
     entity.setParentItem(getParentItem(dto.getParentItemId(), id));
