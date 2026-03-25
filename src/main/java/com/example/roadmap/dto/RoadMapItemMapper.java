@@ -11,7 +11,7 @@ public final class RoadMapItemMapper {
   private RoadMapItemMapper() {
   }
 
-    public static RoadMapItemDto toDto(RoadMapItem entity) {
+  public static RoadMapItemDto toDto(RoadMapItem entity) {
     RoadMapItemDto dto = new RoadMapItemDto();
     dto.setId(entity.getId());
     dto.setTitle(entity.getTitle());
@@ -28,13 +28,24 @@ public final class RoadMapItemMapper {
     return dto;
   }
 
-    public static void copyToEntity(RoadMapItemDto dto, RoadMapItem entity) {
+  public static RoadMapItemDto toDtoWithoutTags(RoadMapItem entity) {
+    RoadMapItemDto dto = new RoadMapItemDto();
+    dto.setId(entity.getId());
+    dto.setTitle(entity.getTitle());
+    dto.setDetails(entity.getDetails());
+    dto.setStatus(entity.getStatus());
+    dto.setRoadMapId(entity.getRoadMap().getId());
+    dto.setParentItemId(entity.getParentItem() != null ? entity.getParentItem().getId() : null);
+    return dto;
+  }
+
+  public static void copyToEntity(RoadMapItemDto dto, RoadMapItem entity) {
     entity.setTitle(dto.getTitle());
     entity.setDetails(dto.getDetails());
     entity.setStatus(dto.getStatus());
   }
 
-    public static RoadMapItemWithTagsDto toWithTagsDto(RoadMapItem entity) {
+  public static RoadMapItemWithTagsDto toWithTagsDto(RoadMapItem entity) {
     RoadMapItemWithTagsDto dto = new RoadMapItemWithTagsDto();
     dto.setId(entity.getId());
     dto.setTitle(entity.getTitle());

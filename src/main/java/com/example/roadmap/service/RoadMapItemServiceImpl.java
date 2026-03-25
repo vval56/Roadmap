@@ -136,7 +136,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
               normalizeJpqlText(parentTitle),
               normalizeJpqlText(tagName),
               status
-          ).stream().map(RoadMapItemMapper::toDto).toList()
+          ).stream().map(RoadMapItemMapper::toDtoWithoutTags).toList()
       );
       searchIndexService.put(key, result);
       return result;
@@ -160,7 +160,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
               normalizeText(parentTitle),
               normalizeText(tagName),
               status == null ? null : status.name()
-          ).stream().map(RoadMapItemMapper::toDto).toList()
+          ).stream().map(RoadMapItemMapper::toDtoWithoutTags).toList()
       );
       searchIndexService.put(key, result);
       return result;
