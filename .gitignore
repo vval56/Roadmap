@@ -2,6 +2,7 @@ HELP.md
 target/
 .postman/
 postman/
+logs/
 .DS_Store
 .mvn/wrapper/maven-wrapper.jar
 

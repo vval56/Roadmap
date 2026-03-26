@@ -26,6 +26,13 @@ Spring Boot REST API для управления roadmap-структурой о
 - пагинация через `Pageable`
 - in-memory индекс на `HashMap` с составным ключом
 - инвалидация кэша при изменении данных
+6. Дополнительно:
+- глобальная обработка ошибок через `@RestControllerAdvice`
+- единый JSON-формат ошибок для всех endpoint
+- валидация входных данных через `@Valid`, `@Validated`, Bean Validation constraints
+- логирование через `logback-spring.xml` с ротацией логов
+- AOP-логирование времени выполнения сервисных методов
+- Swagger/OpenAPI через `springdoc`
 
 ## Структура проекта
 ```text
@@ -176,3 +183,12 @@ GET /api/roadmap-items/search/native?ownerEmail=vladislav@example.com&roadMapTit
 - `parent_item_id` задает прямую связь item-to-item
 - `roadmap_item_tag` связывает items и tags
 - `comments` привязаны к item и автору
+
+## Swagger / OpenAPI
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/api-docs`
+
+## Логи
+- активная конфигурация: `src/main/resources/logback-spring.xml`
+- основной файл логов: `logs/roadmap.log`
+- архивы с ротацией: `logs/archive/`
