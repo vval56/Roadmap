@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -30,6 +31,14 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiErrorResponse> handleNotFound(
       ResourceNotFoundException ex, HttpServletRequest request) {
     return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), List.of());
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
+      DataIntegrityViolationException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.CONFLICT,
+        "Request conflicts with existing data or database constraints",
+        request.getRequestURI(), List.of());
   }
 
   @ExceptionHandler(NoResourceFoundException.class)
@@ -126,6 +135,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiErrorResponse> handleUnexpected(
       Exception ex, HttpServletRequest request) {
+    if (isConflictException(ex)) {
+      return buildResponse(HttpStatus.CONFLICT,
+          "Request conflicts with existing data or database constraints",
+          request.getRequestURI(), List.of());
+    }
     log.error("Unhandled exception for path={}", request.getRequestURI(), ex);
     return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected server error",
         request.getRequestURI(), List.of());
@@ -146,5 +160,33 @@ public class GlobalExceptionHandler {
         fieldErrors
     );
     return ResponseEntity.status(status).body(body);
+  }
+
+  private boolean isConflictException(Throwable throwable) {
+    Throwable current = throwable;
+    while (current != null) {
+      if (current instanceof DataIntegrityViolationException) {
+        return true;
+      }
+
+      String className = current.getClass().getName();
+      if ("org.hibernate.exception.ConstraintViolationException".equals(className)
+          || "org.postgresql.util.PSQLException".equals(className)) {
+        return true;
+      }
+
+      String message = current.getMessage();
+      if (message != null) {
+        String normalized = message.toLowerCase();
+        if (normalized.contains("duplicate key")
+            || normalized.contains("unique constraint")
+            || normalized.contains("violates unique")
+            || normalized.contains("constraint [")) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 }

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -91,6 +92,30 @@ class UserControllerValidationTest {
         .andExpect(status().isMethodNotAllowed())
         .andExpect(jsonPath("$.status").value(405))
         .andExpect(jsonPath("$.error").value("Method Not Allowed"))
+        .andExpect(jsonPath("$.path").value("/api/users"));
+  }
+
+  @Test
+  void createShouldReturnConflictForDuplicateEmail() throws Exception {
+    when(userService.create(org.mockito.ArgumentMatchers.any()))
+        .thenThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint"));
+
+    String validPayload = """
+        {
+          "firstName": "Ivan",
+          "lastName": "Ivanov",
+          "email": "same@example.com"
+        }
+        """;
+
+    mockMvc.perform(post("/api/users")
+            .contentType(APPLICATION_JSON)
+            .content(validPayload))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.error").value("Conflict"))
+        .andExpect(jsonPath("$.message")
+            .value("Request conflicts with existing data or database constraints"))
         .andExpect(jsonPath("$.path").value("/api/users"));
   }
 }
