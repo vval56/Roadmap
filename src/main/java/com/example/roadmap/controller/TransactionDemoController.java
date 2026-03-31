@@ -21,14 +21,16 @@ public class TransactionDemoController {
   private final TransactionDemoService transactionDemoService;
 
   @PostMapping("/without-transactional")
-  @Operation(summary = "Run demo without @Transactional")
+  @Operation(summary = "Run bulk demo without @Transactional",
+      description = "Creates a roadmap and starts bulk roadmap-item insertion without a single wrapping transaction")
   public TransactionDemoResultDto withoutTransactional(
       @Valid @RequestBody TransactionDemoRequestDto requestDto) {
     return transactionDemoService.runWithoutTransactional(requestDto);
   }
 
   @PostMapping("/with-transactional")
-  @Operation(summary = "Run demo with @Transactional")
+  @Operation(summary = "Run bulk demo with @Transactional",
+      description = "Creates a roadmap and starts bulk roadmap-item insertion inside one transaction")
   public TransactionDemoResultDto withTransactional(
       @Valid @RequestBody TransactionDemoRequestDto requestDto) {
     return transactionDemoService.runWithTransactional(requestDto);

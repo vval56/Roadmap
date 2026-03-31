@@ -2,6 +2,7 @@ package com.example.roadmap.service;
 
 import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.cache.RoadMapItemSearchKey;
+import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemMapper;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
@@ -13,9 +14,9 @@ import com.example.roadmap.model.Tag;
 import com.example.roadmap.repository.RoadMapItemRepository;
 import com.example.roadmap.repository.RoadMapRepository;
 import com.example.roadmap.repository.TagRepository;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,10 +42,24 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   public RoadMapItemDto create(RoadMapItemDto dto) {
     RoadMapItem entity = new RoadMapItem();
     RoadMapItemMapper.copyToEntity(dto, entity);
+    entity.setDetails(normalizeDetails(dto.getDetails()));
     entity.setRoadMap(getRoadMap(dto.getRoadMapId()));
     entity.setParentItem(getParentItem(dto.getParentItemId(), null));
     entity.setTags(getTags(dto.getTagIds()));
     RoadMapItemDto saved = RoadMapItemMapper.toDto(roadMapItemRepository.save(entity));
+    invalidateSearchIndex();
+    return saved;
+  }
+
+  @Override
+  public List<RoadMapItemDto> createBulk(Long roadMapId, List<RoadMapItemBulkCreateDto> dtos) {
+    RoadMap roadMap = getRoadMap(roadMapId);
+    List<RoadMapItem> entities = dtos.stream()
+        .map(dto -> toBulkEntity(dto, roadMap))
+        .toList();
+    List<RoadMapItemDto> saved = roadMapItemRepository.saveAll(entities).stream()
+        .map(RoadMapItemMapper::toDto)
+        .toList();
     invalidateSearchIndex();
     return saved;
   }
@@ -56,11 +71,9 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
 
   @Override
   public List<RoadMapItemDto> getAll() {
-    List<RoadMapItemDto> result = new ArrayList<>();
-    for (RoadMapItem item : roadMapItemRepository.findAll()) {
-      result.add(RoadMapItemMapper.toDto(item));
-    }
-    return result;
+    return roadMapItemRepository.findAll().stream()
+        .map(RoadMapItemMapper::toDto)
+        .toList();
   }
 
   @Override
@@ -73,6 +86,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   public RoadMapItemDto update(Long id, RoadMapItemDto dto) {
     RoadMapItem entity = getEntity(id);
     RoadMapItemMapper.copyToEntity(dto, entity);
+    entity.setDetails(normalizeDetails(dto.getDetails()));
     entity.setRoadMap(getRoadMap(dto.getRoadMapId()));
     entity.setParentItem(getParentItem(dto.getParentItemId(), id));
     entity.setTags(getTags(dto.getTagIds()));
@@ -92,31 +106,25 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   @Override
   @Transactional(readOnly = true)
   public List<RoadMapItemWithTagsDto> getAllWithNplusOne() {
-    List<RoadMapItemWithTagsDto> result = new ArrayList<>();
-    for (RoadMapItem item : roadMapItemRepository.findAll()) {
-      result.add(RoadMapItemMapper.toWithTagsDto(item));
-    }
-    return result;
+    return roadMapItemRepository.findAll().stream()
+        .map(RoadMapItemMapper::toWithTagsDto)
+        .toList();
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<RoadMapItemWithTagsDto> getAllWithEntityGraph() {
-    List<RoadMapItemWithTagsDto> result = new ArrayList<>();
-    for (RoadMapItem item : roadMapItemRepository.findAllWithTagsEntityGraph()) {
-      result.add(RoadMapItemMapper.toWithTagsDto(item));
-    }
-    return result;
+    return roadMapItemRepository.findAllWithTagsEntityGraph().stream()
+        .map(RoadMapItemMapper::toWithTagsDto)
+        .toList();
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<RoadMapItemWithTagsDto> getAllWithFetchJoin() {
-    List<RoadMapItemWithTagsDto> result = new ArrayList<>();
-    for (RoadMapItem item : roadMapItemRepository.findAllWithTagsFetchJoin()) {
-      result.add(RoadMapItemMapper.toWithTagsDto(item));
-    }
-    return result;
+    return roadMapItemRepository.findAllWithTagsFetchJoin().stream()
+        .map(RoadMapItemMapper::toWithTagsDto)
+        .toList();
   }
 
   @Override
@@ -174,45 +182,24 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   }
 
   private RoadMap getRoadMap(Long id) {
-    return roadMapRepository.findById(id).orElseGet(this::getAnyRoadMap);
-  }
-
-  private RoadMap getAnyRoadMap() {
-    List<RoadMap> roadMaps = roadMapRepository.findAll();
-    if (roadMaps.isEmpty()) {
-      throw new ResourceNotFoundException("RoadMap with id" + NOT_FOUND_SUFFIX);
-    }
-    return roadMaps.getFirst();
+    return roadMapRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "RoadMap with id=" + id + NOT_FOUND_SUFFIX));
   }
 
   private Set<Tag> getTags(Set<Long> ids) {
-    Set<Tag> tags = new LinkedHashSet<>();
-    if (ids == null) {
-      return tags;
-    }
-
-    for (Long id : ids) {
-      tagRepository.findById(id).ifPresent(tags::add);
-    }
-    if (tags.isEmpty()) {
-      List<Tag> allTags = tagRepository.findAll();
-      if (!allTags.isEmpty()) {
-        tags.add(allTags.getFirst());
-      }
-    }
-    return tags;
+    return Optional.ofNullable(ids)
+        .orElseGet(Set::of)
+        .stream()
+        .map(this::getTag)
+        .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
   }
 
   private RoadMapItem getParentItem(Long parentItemId, Long currentItemId) {
-    if (parentItemId == null) {
-      return null;
-    }
-    if (currentItemId != null && currentItemId.equals(parentItemId)) {
-      return null;
-    }
-    return roadMapItemRepository.findById(parentItemId).orElseThrow(
-        () -> new ResourceNotFoundException(
-            "Parent RoadMapItem with id=" + parentItemId + NOT_FOUND_SUFFIX));
+    return Optional.ofNullable(parentItemId)
+        .filter(id -> currentItemId == null || !currentItemId.equals(id))
+        .map(this::getEntity)
+        .orElse(null);
   }
 
   private Pageable normalizePageable(Pageable pageable) {
@@ -238,17 +225,37 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   }
 
   private String normalizeText(String value) {
-    if (value == null || value.isBlank()) {
-      return null;
-    }
-    return value.trim();
+    return Optional.ofNullable(value)
+        .map(String::trim)
+        .filter(text -> !text.isBlank())
+        .orElse(null);
   }
 
   private String normalizeJpqlText(String value) {
-    if (value == null || value.isBlank()) {
-      return "";
-    }
-    return value.trim();
+    return Optional.ofNullable(value)
+        .map(String::trim)
+        .filter(text -> !text.isBlank())
+        .orElse("");
+  }
+
+  private String normalizeDetails(String value) {
+    return normalizeText(value);
+  }
+
+  private Tag getTag(Long id) {
+    return tagRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Tag with id=" + id + NOT_FOUND_SUFFIX));
+  }
+
+  private RoadMapItem toBulkEntity(RoadMapItemBulkCreateDto dto, RoadMap roadMap) {
+    RoadMapItem entity = new RoadMapItem();
+    entity.setTitle(dto.getTitle());
+    entity.setDetails(normalizeDetails(dto.getDetails()));
+    entity.setStatus(dto.getStatus());
+    entity.setRoadMap(roadMap);
+    entity.setParentItem(getParentItem(dto.getParentItemId(), null));
+    entity.setTags(getTags(dto.getTagIds()));
+    return entity;
   }
 
   private void invalidateSearchIndex() {

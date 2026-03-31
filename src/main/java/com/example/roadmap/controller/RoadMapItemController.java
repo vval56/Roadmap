@@ -1,6 +1,7 @@
 package com.example.roadmap.controller;
 
 import com.example.roadmap.dto.PageResponseDto;
+import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
 import com.example.roadmap.model.ItemStatus;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -43,6 +45,17 @@ public class RoadMapItemController {
   @Operation(summary = "Create roadmap item")
   public RoadMapItemDto create(@Valid @RequestBody RoadMapItemDto dto) {
     return roadMapItemService.create(dto);
+  }
+
+  @PostMapping("/bulk/{roadMapId}")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Bulk create roadmap items",
+      description = "Creates multiple roadmap items for one roadmap in a single request")
+  public List<RoadMapItemDto> createBulk(
+      @Parameter(description = "Roadmap id that will own all created items", example = "1")
+      @PathVariable @Positive Long roadMapId,
+      @Valid @RequestBody @NotEmpty List<@Valid RoadMapItemBulkCreateDto> dtos) {
+    return roadMapItemService.createBulk(roadMapId, dtos);
   }
 
   @GetMapping("/{id}")

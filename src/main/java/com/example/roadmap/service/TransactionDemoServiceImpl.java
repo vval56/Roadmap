@@ -1,5 +1,6 @@
 package com.example.roadmap.service;
 
+import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.dto.TransactionDemoRequestDto;
 import com.example.roadmap.dto.TransactionDemoResultDto;
 import com.example.roadmap.repository.RoadMapItemRepository;
@@ -14,22 +15,37 @@ public class TransactionDemoServiceImpl implements TransactionDemoService {
   private final TransactionWorkerService transactionWorkerService;
   private final RoadMapRepository roadMapRepository;
   private final RoadMapItemRepository roadMapItemRepository;
+  private final RoadMapItemSearchIndexService searchIndexService;
 
   @Override
   public TransactionDemoResultDto runWithoutTransactional(TransactionDemoRequestDto requestDto) {
-    TransactionDemoResultDto result = createBeforeSnapshot();
-    transactionWorkerService.saveWithoutTransactionalAndFail(requestDto);
-    result.setMessage("No exception happened");
-    fillAfterSnapshot(result);
-    return result;
+    return runDemo(requestDto, false);
   }
 
   @Override
   public TransactionDemoResultDto runWithTransactional(TransactionDemoRequestDto requestDto) {
+    return runDemo(requestDto, true);
+  }
+
+  private TransactionDemoResultDto runDemo(TransactionDemoRequestDto requestDto,
+                                           boolean transactional) {
     TransactionDemoResultDto result = createBeforeSnapshot();
-    transactionWorkerService.saveWithTransactionalAndFail(requestDto);
-    result.setMessage("No exception happened");
+    result.setTransactional(transactional);
+    result.setRequestedItems(requestDto.getItems().size());
+
+    try {
+      if (transactional) {
+        transactionWorkerService.saveWithTransactionalAndFail(requestDto);
+      } else {
+        transactionWorkerService.saveWithoutTransactionalAndFail(requestDto);
+      }
+      result.setMessage("Bulk operation completed without exception");
+    } catch (IllegalStateException ex) {
+      result.setMessage(ex.getMessage());
+    }
+
     fillAfterSnapshot(result);
+    searchIndexService.invalidateAll();
     return result;
   }
 

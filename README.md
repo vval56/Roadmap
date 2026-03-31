@@ -21,6 +21,7 @@ Spring Boot REST API для управления roadmap-структурой о
 - `fetch join`
 - демонстрация `N+1`
 - `@Transactional` demo
+- bulk-операция массового создания `RoadMapItem`
 - сложный GET через `JPQL`
 - аналогичный GET через `native query`
 - пагинация через `Pageable`
@@ -30,6 +31,7 @@ Spring Boot REST API для управления roadmap-структурой о
 - глобальная обработка ошибок через `@RestControllerAdvice`
 - единый JSON-формат ошибок для всех endpoint
 - валидация входных данных через `@Valid`, `@Validated`, Bean Validation constraints
+- использование `Stream API` и `Optional` в сервисном слое
 - логирование через `logback-spring.xml` с ротацией логов
 - AOP-логирование времени выполнения сервисных методов
 - Swagger/OpenAPI через `springdoc`
@@ -73,6 +75,7 @@ RoadMap2026/
     │   │   │   ├── CommentDto.java
     │   │   │   ├── CommentMapper.java
     │   │   │   ├── RoadMapDto.java
+    │   │   │   ├── RoadMapItemBulkCreateDto.java
     │   │   │   ├── RoadMapItemDto.java
     │   │   │   ├── RoadMapItemMapper.java
     │   │   │   ├── RoadMapItemWithTagsDto.java
@@ -158,6 +161,13 @@ CRUD:
 - `/api/tags`
 - `/api/comments`
 
+Bulk-операция:
+- `POST /api/roadmap-items/bulk/{roadMapId}`
+
+Транзакционный bulk demo:
+- `POST /api/transactions/without-transactional`
+- `POST /api/transactions/with-transactional`
+
 N+1 demo:
 - `/api/roadmap-items/n-plus-one`
 - `/api/roadmap-items/entity-graph`
@@ -176,6 +186,53 @@ GET /api/roadmap-items/search/jpql?ownerEmail=vladislav@example.com&roadMapTitle
 GET /api/roadmap-items/search/native?ownerEmail=vladislav@example.com&roadMapTitle=java&parentTitle=jpa&tagName=spring&status=IN_PROGRESS&page=0&size=5
 ```
 
+Пример bulk-запроса:
+```http
+POST /api/roadmap-items/bulk/1
+Content-Type: application/json
+
+[
+  {
+    "title": "Configure Docker",
+    "details": "Prepare postgres container",
+    "status": "PLANNED",
+    "tagIds": [1, 2]
+  },
+  {
+    "title": "Write repositories",
+    "details": "Create JpaRepository layer",
+    "status": "IN_PROGRESS"
+  }
+]
+```
+
+Пример демонстрации без `@Transactional`:
+```http
+POST /api/transactions/without-transactional
+Content-Type: application/json
+
+{
+  "ownerId": 1,
+  "roadMapTitle": "Bulk Transaction Demo",
+  "items": [
+    {
+      "title": "Step 1",
+      "details": "Will stay in DB without transaction",
+      "status": "PLANNED"
+    },
+    {
+      "title": "Step 2",
+      "details": "Failure happens after this save",
+      "status": "PLANNED"
+    }
+  ]
+}
+```
+
+Ожидаемая разница:
+- `/without-transactional` оставляет в БД новую roadmap и первые сохраненные items
+- `/with-transactional` откатывает всю bulk-операцию целиком
+
 ## ER-логика модели
 - `app_users` хранит пользователя с `first_name`, `last_name`, `email`
 - `roadmaps` хранит roadmap и его владельца
@@ -192,3 +249,14 @@ GET /api/roadmap-items/search/native?ownerEmail=vladislav@example.com&roadMapTit
 - активная конфигурация: `src/main/resources/logback-spring.xml`
 - основной файл логов: `logs/roadmap.log`
 - архивы с ротацией: `logs/archive/`
+
+## GitHub Actions и Sonar
+- workflow находится в `.github/workflows/sonar.yml`
+- локальная генерация coverage: `./mvnw -Pcoverage verify`
+- XML-отчёт для Sonar: `target/site/jacoco/jacoco.xml`
+- для GitHub Actions нужно настроить:
+- secret `SONAR_TOKEN`
+- variable `SONAR_PROJECT_KEY`
+- variable `SONAR_ORGANIZATION`
+- optional variable `SONAR_HOST_URL`:
+  для SonarCloud можно не задавать, по умолчанию используется `https://sonarcloud.io`

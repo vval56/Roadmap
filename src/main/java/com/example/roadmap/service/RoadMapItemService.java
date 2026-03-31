@@ -1,5 +1,6 @@
 package com.example.roadmap.service;
 
+import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
 import com.example.roadmap.model.ItemStatus;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 public interface RoadMapItemService {
 
   RoadMapItemDto create(RoadMapItemDto dto);
+
+  List<RoadMapItemDto> createBulk(Long roadMapId, List<RoadMapItemBulkCreateDto> dtos);
 
   RoadMapItemDto getById(Long id);
 
