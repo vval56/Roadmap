@@ -53,6 +53,7 @@ class TransactionWorkerServiceImplTest {
   void saveWithoutTransactionalAndFailShouldSaveRoadMapAndTwoItemsBeforeFailure() {
     User owner = new User();
     owner.setId(1L);
+    TransactionDemoRequestDto requestDto = demoRequest();
 
     Tag springTag = new Tag();
     springTag.setId(2L);
@@ -67,7 +68,7 @@ class TransactionWorkerServiceImplTest {
     when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     IllegalStateException exception = assertThrows(IllegalStateException.class,
-        () -> transactionWorkerService.saveWithoutTransactionalAndFail(demoRequest()));
+        () -> transactionWorkerService.saveWithoutTransactionalAndFail(requestDto));
 
     assertEquals("Forced bulk failure after saving 2 items", exception.getMessage());
     verify(roadMapRepository).save(any(RoadMap.class));
@@ -80,10 +81,12 @@ class TransactionWorkerServiceImplTest {
 
   @Test
   void saveWithTransactionalAndFailShouldThrowWhenOwnerDoesNotExist() {
+    TransactionDemoRequestDto requestDto = missingOwnerRequest();
+
     when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
     ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-        () -> transactionWorkerService.saveWithTransactionalAndFail(missingOwnerRequest()));
+        () -> transactionWorkerService.saveWithTransactionalAndFail(requestDto));
 
     assertEquals("User with id=99 not found", exception.getMessage());
   }
@@ -92,6 +95,7 @@ class TransactionWorkerServiceImplTest {
   void saveWithTransactionalAndFailShouldUseParentTagAndBlankDetailsBeforeFailure() {
     User owner = new User();
     owner.setId(1L);
+    TransactionDemoRequestDto requestDto = transactionalRequest();
 
     Tag springTag = new Tag();
     springTag.setId(2L);
@@ -106,7 +110,7 @@ class TransactionWorkerServiceImplTest {
     when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     IllegalStateException exception = assertThrows(IllegalStateException.class,
-        () -> transactionWorkerService.saveWithTransactionalAndFail(transactionalRequest()));
+        () -> transactionWorkerService.saveWithTransactionalAndFail(requestDto));
 
     assertEquals("Forced bulk failure after saving 2 items", exception.getMessage());
 
@@ -125,13 +129,14 @@ class TransactionWorkerServiceImplTest {
   void saveWithoutTransactionalAndFailShouldThrowWhenTagDoesNotExist() {
     User owner = new User();
     owner.setId(1L);
+    TransactionDemoRequestDto requestDto = missingTagRequest();
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
     when(roadMapRepository.save(any(RoadMap.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(tagRepository.findById(77L)).thenReturn(Optional.empty());
 
     ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-        () -> transactionWorkerService.saveWithoutTransactionalAndFail(missingTagRequest()));
+        () -> transactionWorkerService.saveWithoutTransactionalAndFail(requestDto));
 
     assertEquals("Tag with id=77 not found", exception.getMessage());
   }
@@ -140,13 +145,13 @@ class TransactionWorkerServiceImplTest {
   void saveWithoutTransactionalShouldCompleteWhenOnlyOneItemIsProvided() {
     User owner = new User();
     owner.setId(1L);
+    TransactionDemoRequestDto requestDto = singleItemRequest();
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
     when(roadMapRepository.save(any(RoadMap.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    assertDoesNotThrow(() -> transactionWorkerService
-        .saveWithoutTransactionalAndFail(singleItemRequest()));
+    assertDoesNotThrow(() -> transactionWorkerService.saveWithoutTransactionalAndFail(requestDto));
 
     verify(roadMapItemRepository, times(1)).save(any(RoadMapItem.class));
   }
@@ -155,13 +160,13 @@ class TransactionWorkerServiceImplTest {
   void saveWithTransactionalShouldCompleteWhenOnlyOneItemIsProvided() {
     User owner = new User();
     owner.setId(1L);
+    TransactionDemoRequestDto requestDto = singleItemRequest();
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
     when(roadMapRepository.save(any(RoadMap.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    assertDoesNotThrow(() -> transactionWorkerService
-        .saveWithTransactionalAndFail(singleItemRequest()));
+    assertDoesNotThrow(() -> transactionWorkerService.saveWithTransactionalAndFail(requestDto));
 
     verify(roadMapItemRepository, times(1)).save(any(RoadMapItem.class));
   }
@@ -170,13 +175,14 @@ class TransactionWorkerServiceImplTest {
   void saveWithTransactionalAndFailShouldThrowWhenParentDoesNotExist() {
     User owner = new User();
     owner.setId(1L);
+    TransactionDemoRequestDto requestDto = missingParentRequest();
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
     when(roadMapRepository.save(any(RoadMap.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(roadMapItemRepository.findById(55L)).thenReturn(Optional.empty());
 
     ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-        () -> transactionWorkerService.saveWithTransactionalAndFail(missingParentRequest()));
+        () -> transactionWorkerService.saveWithTransactionalAndFail(requestDto));
 
     assertEquals("RoadMapItem with id=55 not found", exception.getMessage());
   }

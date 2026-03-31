@@ -93,14 +93,15 @@ class RoadMapItemServiceImplTest {
   void createBulkShouldThrowWhenTagDoesNotExist() {
     RoadMap roadMap = new RoadMap();
     roadMap.setId(1L);
+    List<RoadMapItemBulkCreateDto> payload = List.of(
+        bulkItem("Broken item", "details", ItemStatus.PLANNED, Set.of(99L))
+    );
 
     when(roadMapRepository.findById(1L)).thenReturn(java.util.Optional.of(roadMap));
     when(tagRepository.findById(99L)).thenReturn(java.util.Optional.empty());
 
     ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-        () -> roadMapItemService.createBulk(1L, List.of(
-            bulkItem("Broken item", "details", ItemStatus.PLANNED, Set.of(99L))
-        )));
+        () -> roadMapItemService.createBulk(1L, payload));
 
     assertEquals("Tag with id=99 not found", exception.getMessage());
     verify(roadMapItemRepository, never()).saveAll(anyList());

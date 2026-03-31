@@ -15,17 +15,22 @@ public class ServiceExecutionLoggingAspect {
   public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
     Logger logger = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
     long startedAt = System.nanoTime();
+    boolean successful = false;
     try {
       Object result = joinPoint.proceed();
-      long durationMs = (System.nanoTime() - startedAt) / 1_000_000;
-      logger.info("Service method {} executed in {} ms",
-          joinPoint.getSignature().toShortString(), durationMs);
+      successful = true;
       return result;
-    } catch (Throwable ex) {
+    } finally {
       long durationMs = (System.nanoTime() - startedAt) / 1_000_000;
-      logger.warn("Service method {} failed in {} ms: {}",
-          joinPoint.getSignature().toShortString(), durationMs, ex.getMessage());
-      throw ex;
+      if (successful) {
+        if (logger.isInfoEnabled()) {
+          logger.info("Service method {} executed in {} ms",
+              joinPoint.getSignature().toShortString(), durationMs);
+        }
+      } else if (logger.isWarnEnabled()) {
+        logger.warn("Service method {} failed in {} ms",
+            joinPoint.getSignature().toShortString(), durationMs);
+      }
     }
   }
 }

@@ -9,6 +9,8 @@ import com.example.roadmap.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+  private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
   private final UserRepository userRepository;
   private final RoadMapItemSearchIndexService searchIndexService;
 
@@ -64,7 +67,7 @@ public class UserServiceImpl implements UserService {
         searchIndexService.invalidateAll();
       }
     } catch (RuntimeException ex) {
-      return;
+      log.debug("Failed to delete user with id={}", id, ex);
     }
   }
 

@@ -212,15 +212,19 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
                                         String roadMapTitle, String parentTitle,
                                         String tagName, ItemStatus status, Pageable pageable) {
     return RoadMapItemSearchKey.of(
-        queryType,
-        ownerEmail,
-        roadMapTitle,
-        parentTitle,
-        tagName,
-        status == null ? null : status.name(),
-        pageable.getPageNumber(),
-        pageable.getPageSize(),
-        pageable.getSort().toString()
+        RoadMapItemSearchKey.criteria(
+            queryType,
+            ownerEmail,
+            roadMapTitle,
+            parentTitle,
+            tagName,
+            status == null ? null : status.name()
+        ),
+        RoadMapItemSearchKey.pageDescriptor(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            pageable.getSort().toString()
+        )
     );
   }
 

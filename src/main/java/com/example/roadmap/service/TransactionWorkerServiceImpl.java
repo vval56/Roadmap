@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TransactionWorkerServiceImpl implements TransactionWorkerService {
 
+  private static final String NOT_FOUND_SUFFIX = " not found";
+
   private final UserRepository userRepository;
   private final RoadMapRepository roadMapRepository;
   private final RoadMapItemRepository roadMapItemRepository;
@@ -58,7 +60,7 @@ public class TransactionWorkerServiceImpl implements TransactionWorkerService {
   private User getOwner(Long ownerId) {
     return userRepository.findById(ownerId)
         .orElseThrow(() -> new ResourceNotFoundException(
-            "User with id=" + ownerId + " not found"));
+            "User with id=" + ownerId + NOT_FOUND_SUFFIX));
   }
 
   private void saveItemsAndFail(RoadMap roadMap, List<RoadMapItemBulkCreateDto> itemDtos) {
@@ -94,7 +96,7 @@ public class TransactionWorkerServiceImpl implements TransactionWorkerService {
   private RoadMapItem getExistingItem(Long itemId) {
     return roadMapItemRepository.findById(itemId)
         .orElseThrow(() -> new ResourceNotFoundException(
-            "RoadMapItem with id=" + itemId + " not found"));
+            "RoadMapItem with id=" + itemId + NOT_FOUND_SUFFIX));
   }
 
   private Set<Tag> getTags(Set<Long> tagIds) {
@@ -107,7 +109,8 @@ public class TransactionWorkerServiceImpl implements TransactionWorkerService {
 
   private Tag getTag(Long tagId) {
     return tagRepository.findById(tagId)
-        .orElseThrow(() -> new ResourceNotFoundException("Tag with id=" + tagId + " not found"));
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Tag with id=" + tagId + NOT_FOUND_SUFFIX));
   }
 
   private String normalizeDetails(String details) {

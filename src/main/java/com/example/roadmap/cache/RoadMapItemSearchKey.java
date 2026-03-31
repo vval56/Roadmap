@@ -26,13 +26,17 @@ public final class RoadMapItemSearchKey {
     this.sort = pageDescriptor.sort;
   }
 
-  public static RoadMapItemSearchKey of(String queryType, String ownerEmail, String roadMapTitle,
-                                        String parentTitle, String tagName, String status,
-                                        int page, int size, String sort) {
-    return new RoadMapItemSearchKey(
-        new SearchCriteria(queryType, ownerEmail, roadMapTitle, parentTitle, tagName, status),
-        new PageDescriptor(page, size, sort)
-    );
+  public static RoadMapItemSearchKey of(SearchCriteria criteria, PageDescriptor pageDescriptor) {
+    return new RoadMapItemSearchKey(criteria, pageDescriptor);
+  }
+
+  public static SearchCriteria criteria(String queryType, String ownerEmail, String roadMapTitle,
+                                        String parentTitle, String tagName, String status) {
+    return new SearchCriteria(queryType, ownerEmail, roadMapTitle, parentTitle, tagName, status);
+  }
+
+  public static PageDescriptor pageDescriptor(int page, int size, String sort) {
+    return new PageDescriptor(page, size, sort);
   }
 
   private static String normalize(String value) {
@@ -68,7 +72,7 @@ public final class RoadMapItemSearchKey {
         tagName, status, page, size, sort);
   }
 
-  private static final class SearchCriteria {
+  public static final class SearchCriteria {
     private final String queryType;
     private final String ownerEmail;
     private final String roadMapTitle;
@@ -87,7 +91,7 @@ public final class RoadMapItemSearchKey {
     }
   }
 
-  private static final class PageDescriptor {
+  public static final class PageDescriptor {
     private final int page;
     private final int size;
     private final String sort;
