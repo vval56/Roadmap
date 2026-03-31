@@ -35,7 +35,7 @@ jobs:
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' && env.SONAR_ORGANIZATION != '' }}
         run: >
           ./mvnw -B -Pcoverage
-          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
           -Dsonar.token=${SONAR_TOKEN}
           -Dsonar.host.url=${SONAR_HOST_URL:-https://sonarcloud.io}
           -Dsonar.projectKey=${SONAR_PROJECT_KEY}
