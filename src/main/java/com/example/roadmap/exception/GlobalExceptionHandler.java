@@ -34,6 +34,12 @@ public class GlobalExceptionHandler {
     return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), List.of());
   }
 
+  @ExceptionHandler(BusinessRuleViolationException.class)
+  public ResponseEntity<ApiErrorResponse> handleBusinessRuleViolation(
+      BusinessRuleViolationException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
+  }
+
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
       DataIntegrityViolationException ex, HttpServletRequest request) {

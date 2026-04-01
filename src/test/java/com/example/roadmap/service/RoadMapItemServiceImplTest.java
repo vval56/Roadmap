@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.dto.RoadMapItemDto;
+import com.example.roadmap.exception.BusinessRuleViolationException;
 import com.example.roadmap.exception.ResourceNotFoundException;
 import com.example.roadmap.model.ItemStatus;
 import com.example.roadmap.model.RoadMap;
@@ -105,6 +106,34 @@ class RoadMapItemServiceImplTest {
 
     assertEquals("Tag with id=99 not found", exception.getMessage());
     verify(roadMapItemRepository, never()).saveAll(anyList());
+    verify(searchIndexService, never()).invalidateAll();
+  }
+
+  @Test
+  void updateShouldRejectBackwardStatusTransition() {
+    RoadMap roadMap = new RoadMap();
+    roadMap.setId(2L);
+
+    RoadMapItem existingItem = new RoadMapItem();
+    existingItem.setId(37L);
+    existingItem.setStatus(ItemStatus.IN_PROGRESS);
+    existingItem.setRoadMap(roadMap);
+
+    RoadMapItemDto payload = new RoadMapItemDto();
+    payload.setTitle("Learn JPA basics");
+    payload.setDetails("Entity mapping, repositories, relationships");
+    payload.setStatus(ItemStatus.PLANNED);
+    payload.setRoadMapId(2L);
+    payload.setTagIds(Set.of());
+
+    when(roadMapItemRepository.findById(37L)).thenReturn(java.util.Optional.of(existingItem));
+
+    BusinessRuleViolationException exception = assertThrows(BusinessRuleViolationException.class,
+        () -> roadMapItemService.update(37L, payload));
+
+    assertEquals("RoadMapItem status cannot move backward from IN_PROGRESS to PLANNED",
+        exception.getMessage());
+    verify(roadMapItemRepository, never()).save(existingItem);
     verify(searchIndexService, never()).invalidateAll();
   }
 

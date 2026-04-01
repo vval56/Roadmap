@@ -6,6 +6,7 @@ import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemMapper;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
+import com.example.roadmap.exception.BusinessRuleViolationException;
 import com.example.roadmap.exception.ResourceNotFoundException;
 import com.example.roadmap.model.ItemStatus;
 import com.example.roadmap.model.RoadMap;
@@ -85,6 +86,7 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   @Override
   public RoadMapItemDto update(Long id, RoadMapItemDto dto) {
     RoadMapItem entity = getEntity(id);
+    validateStatusTransition(entity, dto);
     RoadMapItemMapper.copyToEntity(dto, entity);
     entity.setDetails(normalizeDetails(dto.getDetails()));
     entity.setRoadMap(getRoadMap(dto.getRoadMapId()));
@@ -249,6 +251,14 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   private Tag getTag(Long id) {
     return tagRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Tag with id=" + id + NOT_FOUND_SUFFIX));
+  }
+
+  private void validateStatusTransition(RoadMapItem entity, RoadMapItemDto dto) {
+    if (dto.getStatus().ordinal() < entity.getStatus().ordinal()) {
+      throw new BusinessRuleViolationException(
+          "RoadMapItem status cannot move backward from %s to %s"
+              .formatted(entity.getStatus(), dto.getStatus()));
+    }
   }
 
   private RoadMapItem toBulkEntity(RoadMapItemBulkCreateDto dto, RoadMap roadMap) {
