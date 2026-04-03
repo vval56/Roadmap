@@ -14,6 +14,10 @@ public interface RoadMapItemService {
 
   List<RoadMapItemDto> createBulk(Long roadMapId, List<RoadMapItemBulkCreateDto> dtos);
 
+  List<RoadMapItemDto> createBulkWithoutTransactional(Long roadMapId, List<RoadMapItemBulkCreateDto> dtos);
+
+  List<RoadMapItemDto> createBulkWithTransactional(Long roadMapId, List<RoadMapItemBulkCreateDto> dtos);
+
   RoadMapItemDto getById(Long id);
 
   List<RoadMapItemDto> getAll();

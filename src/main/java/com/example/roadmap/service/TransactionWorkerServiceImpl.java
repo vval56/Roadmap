@@ -64,15 +64,8 @@ public class TransactionWorkerServiceImpl implements TransactionWorkerService {
   }
 
   private void saveItemsAndFail(RoadMap roadMap, List<RoadMapItemBulkCreateDto> itemDtos) {
-    List<RoadMapItem> items = itemDtos.stream()
-        .map(itemDto -> toEntity(itemDto, roadMap))
-        .toList();
-
-    for (int index = 0; index < items.size(); index++) {
-      roadMapItemRepository.save(items.get(index));
-      if (index == 1) {
-        throw new IllegalStateException("Forced bulk failure after saving 2 items");
-      }
+    for (RoadMapItemBulkCreateDto itemDto : itemDtos) {
+      roadMapItemRepository.save(toEntity(itemDto, roadMap));
     }
   }
 

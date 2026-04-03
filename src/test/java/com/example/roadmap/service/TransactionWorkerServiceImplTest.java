@@ -50,16 +50,17 @@ class TransactionWorkerServiceImplTest {
   private TransactionWorkerServiceImpl transactionWorkerService;
 
   @Test
-  void saveWithoutTransactionalAndFailShouldSaveRoadMapAndTwoItemsBeforeFailure() {
+  void saveWithoutTransactionalAndFailShouldKeepFirstItemWhenSecondItemIsInvalid() {
     User owner = new User();
     owner.setId(1L);
-    TransactionDemoRequestDto requestDto = demoRequest();
+    TransactionDemoRequestDto requestDto = missingTagOnSecondItemRequest();
 
     Tag springTag = new Tag();
     springTag.setId(2L);
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
     when(tagRepository.findById(2L)).thenReturn(Optional.of(springTag));
+    when(tagRepository.findById(999999L)).thenReturn(Optional.empty());
     when(roadMapRepository.save(any(RoadMap.class))).thenAnswer(invocation -> {
       RoadMap roadMap = invocation.getArgument(0);
       roadMap.setId(10L);
@@ -67,12 +68,12 @@ class TransactionWorkerServiceImplTest {
     });
     when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    IllegalStateException exception = assertThrows(IllegalStateException.class,
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
         () -> transactionWorkerService.saveWithoutTransactionalAndFail(requestDto));
 
-    assertEquals("Forced bulk failure after saving 2 items", exception.getMessage());
+    assertEquals("Tag with id=999999 not found", exception.getMessage());
     verify(roadMapRepository).save(any(RoadMap.class));
-    verify(roadMapItemRepository, times(2)).save(any(RoadMapItem.class));
+    verify(roadMapItemRepository, times(1)).save(any(RoadMapItem.class));
 
     ArgumentCaptor<RoadMap> roadMapCaptor = ArgumentCaptor.forClass(RoadMap.class);
     verify(roadMapRepository).save(roadMapCaptor.capture());
@@ -92,10 +93,10 @@ class TransactionWorkerServiceImplTest {
   }
 
   @Test
-  void saveWithTransactionalAndFailShouldUseParentTagAndBlankDetailsBeforeFailure() {
+  void saveWithTransactionalAndFailShouldUseParentTagAndFailOnBrokenSecondItem() {
     User owner = new User();
     owner.setId(1L);
-    TransactionDemoRequestDto requestDto = transactionalRequest();
+    TransactionDemoRequestDto requestDto = transactionalFailureRequest();
 
     Tag springTag = new Tag();
     springTag.setId(2L);
@@ -105,21 +106,22 @@ class TransactionWorkerServiceImplTest {
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
     when(tagRepository.findById(2L)).thenReturn(Optional.of(springTag));
+    when(tagRepository.findById(999999L)).thenReturn(Optional.empty());
     when(roadMapItemRepository.findById(5L)).thenReturn(Optional.of(parentItem));
     when(roadMapRepository.save(any(RoadMap.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    IllegalStateException exception = assertThrows(IllegalStateException.class,
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
         () -> transactionWorkerService.saveWithTransactionalAndFail(requestDto));
 
-    assertEquals("Forced bulk failure after saving 2 items", exception.getMessage());
+    assertEquals("Tag with id=999999 not found", exception.getMessage());
 
     ArgumentCaptor<RoadMap> roadMapCaptor = ArgumentCaptor.forClass(RoadMap.class);
     verify(roadMapRepository).save(roadMapCaptor.capture());
     assertEquals("Bulk scenario with @Transactional", roadMapCaptor.getValue().getDescription());
 
     ArgumentCaptor<RoadMapItem> itemCaptor = ArgumentCaptor.forClass(RoadMapItem.class);
-    verify(roadMapItemRepository, times(2)).save(itemCaptor.capture());
+    verify(roadMapItemRepository, times(1)).save(itemCaptor.capture());
     assertNull(itemCaptor.getAllValues().getFirst().getDetails());
     assertEquals(parentItem, itemCaptor.getAllValues().getFirst().getParentItem());
     assertEquals(Set.of(springTag), itemCaptor.getAllValues().getFirst().getTags());
@@ -139,6 +141,7 @@ class TransactionWorkerServiceImplTest {
         () -> transactionWorkerService.saveWithoutTransactionalAndFail(requestDto));
 
     assertEquals("Tag with id=77 not found", exception.getMessage());
+    verify(roadMapItemRepository, times(1)).save(any(RoadMapItem.class));
   }
 
   @Test
@@ -198,6 +201,17 @@ class TransactionWorkerServiceImplTest {
     return requestDto;
   }
 
+  private TransactionDemoRequestDto missingTagOnSecondItemRequest() {
+    TransactionDemoRequestDto requestDto = new TransactionDemoRequestDto();
+    requestDto.setOwnerId(1L);
+    requestDto.setRoadMapTitle("Broken second item");
+    requestDto.setItems(List.of(
+        bulkItem("Step 1", " First ", ItemStatus.PLANNED, Set.of(2L)),
+        bulkItem("Broken step", " Second ", ItemStatus.IN_PROGRESS, Set.of(999999L))
+    ));
+    return requestDto;
+  }
+
   private TransactionDemoRequestDto missingOwnerRequest() {
     TransactionDemoRequestDto requestDto = new TransactionDemoRequestDto();
     requestDto.setOwnerId(99L);
@@ -209,13 +223,13 @@ class TransactionWorkerServiceImplTest {
     return requestDto;
   }
 
-  private TransactionDemoRequestDto transactionalRequest() {
+  private TransactionDemoRequestDto transactionalFailureRequest() {
     TransactionDemoRequestDto requestDto = new TransactionDemoRequestDto();
     requestDto.setOwnerId(1L);
     requestDto.setRoadMapTitle("Transactional path");
     requestDto.setItems(List.of(
         bulkItemWithParent("Child step", "   ", ItemStatus.PLANNED, Set.of(2L), 5L),
-        bulkItem("Second step", "Second", ItemStatus.DONE, Set.of())
+        bulkItem("Broken step", "Second", ItemStatus.DONE, Set.of(999999L))
     ));
     return requestDto;
   }
@@ -225,8 +239,8 @@ class TransactionWorkerServiceImplTest {
     requestDto.setOwnerId(1L);
     requestDto.setRoadMapTitle("Missing tag");
     requestDto.setItems(List.of(
-        bulkItem("Step 1", "One", ItemStatus.PLANNED, Set.of(77L)),
-        bulkItem("Step 2", "Two", ItemStatus.PLANNED, Set.of())
+        bulkItem("Step 1", "One", ItemStatus.PLANNED, Set.of()),
+        bulkItem("Step 2", "Two", ItemStatus.PLANNED, Set.of(77L))
     ));
     return requestDto;
   }

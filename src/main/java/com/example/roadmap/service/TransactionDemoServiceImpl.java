@@ -3,6 +3,7 @@ package com.example.roadmap.service;
 import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.dto.TransactionDemoRequestDto;
 import com.example.roadmap.dto.TransactionDemoResultDto;
+import com.example.roadmap.exception.ResourceNotFoundException;
 import com.example.roadmap.repository.RoadMapItemRepository;
 import com.example.roadmap.repository.RoadMapRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class TransactionDemoServiceImpl implements TransactionDemoService {
         transactionWorkerService.saveWithoutTransactionalAndFail(requestDto);
       }
       result.setMessage("Bulk operation completed without exception");
-    } catch (IllegalStateException ex) {
+    } catch (ResourceNotFoundException ex) {
       result.setMessage(ex.getMessage());
     }
 

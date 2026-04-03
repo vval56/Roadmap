@@ -4,14 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.roadmap.cache.RoadMapItemSearchIndexService;
 import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.dto.TransactionDemoRequestDto;
 import com.example.roadmap.dto.TransactionDemoResultDto;
+import com.example.roadmap.exception.ResourceNotFoundException;
 import com.example.roadmap.model.ItemStatus;
 import com.example.roadmap.repository.RoadMapItemRepository;
 import com.example.roadmap.repository.RoadMapRepository;
@@ -45,8 +46,8 @@ class TransactionDemoServiceImplTest {
     TransactionDemoRequestDto requestDto = demoRequest();
 
     when(roadMapRepository.count()).thenReturn(1L, 2L);
-    when(roadMapItemRepository.count()).thenReturn(3L, 5L);
-    doThrow(new IllegalStateException("Forced bulk failure after saving 2 items"))
+    when(roadMapItemRepository.count()).thenReturn(3L, 4L);
+    doThrow(new ResourceNotFoundException("Tag with id=999999 not found"))
         .when(transactionWorkerService).saveWithoutTransactionalAndFail(requestDto);
 
     TransactionDemoResultDto result = transactionDemoService.runWithoutTransactional(requestDto);
@@ -56,8 +57,8 @@ class TransactionDemoServiceImplTest {
     assertEquals(1L, result.getRoadMapsBefore());
     assertEquals(2L, result.getRoadMapsAfter());
     assertEquals(3L, result.getItemsBefore());
-    assertEquals(5L, result.getItemsAfter());
-    assertEquals("Forced bulk failure after saving 2 items", result.getMessage());
+    assertEquals(4L, result.getItemsAfter());
+    assertEquals("Tag with id=999999 not found", result.getMessage());
 
     verify(transactionWorkerService).saveWithoutTransactionalAndFail(requestDto);
     verify(searchIndexService).invalidateAll();
@@ -69,7 +70,7 @@ class TransactionDemoServiceImplTest {
 
     when(roadMapRepository.count()).thenReturn(4L, 4L);
     when(roadMapItemRepository.count()).thenReturn(8L, 8L);
-    doThrow(new IllegalStateException("Forced bulk failure after saving 2 items"))
+    doThrow(new ResourceNotFoundException("Tag with id=999999 not found"))
         .when(transactionWorkerService).saveWithTransactionalAndFail(requestDto);
 
     TransactionDemoResultDto result = transactionDemoService.runWithTransactional(requestDto);
@@ -80,7 +81,7 @@ class TransactionDemoServiceImplTest {
     assertEquals(4L, result.getRoadMapsAfter());
     assertEquals(8L, result.getItemsBefore());
     assertEquals(8L, result.getItemsAfter());
-    assertEquals("Forced bulk failure after saving 2 items", result.getMessage());
+    assertEquals("Tag with id=999999 not found", result.getMessage());
 
     verify(transactionWorkerService).saveWithTransactionalAndFail(requestDto);
     verify(searchIndexService).invalidateAll();

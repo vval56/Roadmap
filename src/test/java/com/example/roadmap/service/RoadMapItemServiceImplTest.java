@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -135,6 +136,62 @@ class RoadMapItemServiceImplTest {
         exception.getMessage());
     verify(roadMapItemRepository, never()).save(existingItem);
     verify(searchIndexService, never()).invalidateAll();
+  }
+
+  @Test
+  void createBulkWithoutTransactionalShouldKeepFirstSavedItemWhenSecondFails() {
+    RoadMap roadMap = new RoadMap();
+    roadMap.setId(1L);
+
+    Tag springTag = new Tag();
+    springTag.setId(2L);
+
+    when(roadMapRepository.findById(1L)).thenReturn(java.util.Optional.of(roadMap));
+    when(tagRepository.findById(2L)).thenReturn(java.util.Optional.of(springTag));
+    when(tagRepository.findById(999999L)).thenReturn(java.util.Optional.empty());
+    when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> {
+      RoadMapItem item = invocation.getArgument(0);
+      item.setId(101L);
+      return item;
+    });
+
+    List<RoadMapItemBulkCreateDto> payload = List.of(
+        bulkItem("Valid item", "First", ItemStatus.PLANNED, Set.of(2L)),
+        bulkItem("Broken item", "Second", ItemStatus.IN_PROGRESS, Set.of(999999L))
+    );
+
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        () -> roadMapItemService.createBulkWithoutTransactional(1L, payload));
+
+    assertEquals("Tag with id=999999 not found", exception.getMessage());
+    verify(roadMapItemRepository).save(any(RoadMapItem.class));
+    verify(searchIndexService).invalidateAll();
+  }
+
+  @Test
+  void createBulkWithTransactionalShouldThrowWhenSecondItemFails() {
+    RoadMap roadMap = new RoadMap();
+    roadMap.setId(1L);
+
+    Tag springTag = new Tag();
+    springTag.setId(2L);
+
+    when(roadMapRepository.findById(1L)).thenReturn(java.util.Optional.of(roadMap));
+    when(tagRepository.findById(2L)).thenReturn(java.util.Optional.of(springTag));
+    when(tagRepository.findById(999999L)).thenReturn(java.util.Optional.empty());
+    when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    List<RoadMapItemBulkCreateDto> payload = List.of(
+        bulkItem("Valid item", "First", ItemStatus.PLANNED, Set.of(2L)),
+        bulkItem("Broken item", "Second", ItemStatus.IN_PROGRESS, Set.of(999999L))
+    );
+
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        () -> roadMapItemService.createBulkWithTransactional(1L, payload));
+
+    assertEquals("Tag with id=999999 not found", exception.getMessage());
+    verify(roadMapItemRepository).save(any(RoadMapItem.class));
+    verify(searchIndexService).invalidateAll();
   }
 
   private RoadMapItemBulkCreateDto bulkItem(String title, String details,

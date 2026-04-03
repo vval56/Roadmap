@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +64,20 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
         .toList();
     invalidateSearchIndex();
     return saved;
+  }
+
+  @Override
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  public List<RoadMapItemDto> createBulkWithoutTransactional(Long roadMapId,
+                                                             List<RoadMapItemBulkCreateDto> dtos) {
+    return createBulkSequentially(roadMapId, dtos);
+  }
+
+  @Override
+  @Transactional
+  public List<RoadMapItemDto> createBulkWithTransactional(Long roadMapId,
+                                                          List<RoadMapItemBulkCreateDto> dtos) {
+    return createBulkSequentially(roadMapId, dtos);
   }
 
   @Override
@@ -270,6 +285,25 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
     entity.setParentItem(getParentItem(dto.getParentItemId(), null));
     entity.setTags(getTags(dto.getTagIds()));
     return entity;
+  }
+
+  private List<RoadMapItemDto> createBulkSequentially(Long roadMapId, List<RoadMapItemBulkCreateDto> dtos) {
+    RoadMap roadMap = getRoadMap(roadMapId);
+    List<RoadMapItemDto> saved = new java.util.ArrayList<>();
+    boolean hasChanges = false;
+
+    try {
+      for (RoadMapItemBulkCreateDto dto : dtos) {
+        RoadMapItem entity = toBulkEntity(dto, roadMap);
+        saved.add(RoadMapItemMapper.toDto(roadMapItemRepository.save(entity)));
+        hasChanges = true;
+      }
+      return saved;
+    } finally {
+      if (hasChanges) {
+        invalidateSearchIndex();
+      }
+    }
   }
 
   private void invalidateSearchIndex() {

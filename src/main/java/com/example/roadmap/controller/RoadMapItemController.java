@@ -6,8 +6,14 @@ import com.example.roadmap.dto.RoadMapItemDto;
 import com.example.roadmap.dto.RoadMapItemWithTagsDto;
 import com.example.roadmap.model.ItemStatus;
 import com.example.roadmap.service.RoadMapItemService;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.Valid;
@@ -38,6 +44,23 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Roadmap Items", description = "CRUD, pagination and search operations for roadmap items")
 public class RoadMapItemController {
 
+  private static final String BULK_PARTIAL_FAILURE_EXAMPLE = """
+      [
+        {
+          "title": "Valid item",
+          "details": "This item should be saved first",
+          "status": "PLANNED",
+          "tagIds": []
+        },
+        {
+          "title": "Broken item",
+          "details": "This item references a missing tag",
+          "status": "IN_PROGRESS",
+          "tagIds": [999999]
+        }
+      ]
+      """;
+
   private final RoadMapItemService roadMapItemService;
 
   @PostMapping
@@ -56,6 +79,56 @@ public class RoadMapItemController {
       @PathVariable @Positive Long roadMapId,
       @Valid @RequestBody @NotEmpty List<@Valid RoadMapItemBulkCreateDto> dtos) {
     return roadMapItemService.createBulk(roadMapId, dtos);
+  }
+
+  @PostMapping("/bulk/non-transactional/{roadMapId}")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Bulk create roadmap items without @Transactional",
+      description = "Send two items: the first valid and the second invalid. "
+          + "After the error, use GET /api/roadmap-items to confirm that the first item remained in the database.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "All items were created"),
+      @ApiResponse(responseCode = "404", description = "Second item failed after partial persistence")
+  })
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
+      description = "Bulk array where the first element is valid and the second one is invalid",
+      content = @Content(
+          mediaType = "application/json",
+          array = @ArraySchema(schema = @Schema(implementation = RoadMapItemBulkCreateDto.class)),
+          examples = @ExampleObject(
+              name = "FirstValidSecondInvalid",
+              value = BULK_PARTIAL_FAILURE_EXAMPLE)))
+  public List<RoadMapItemDto> createBulkWithoutTransactional(
+      @Parameter(description = "Roadmap id that will own all created items", example = "2")
+      @PathVariable @Positive Long roadMapId,
+      @Valid @RequestBody @NotEmpty List<@Valid RoadMapItemBulkCreateDto> dtos) {
+    return roadMapItemService.createBulkWithoutTransactional(roadMapId, dtos);
+  }
+
+  @PostMapping("/bulk/transactional/{roadMapId}")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Bulk create roadmap items with @Transactional",
+      description = "Send the same two items: the first valid and the second invalid. "
+          + "After the error, use GET /api/roadmap-items to confirm that the first item was rolled back.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "All items were created"),
+      @ApiResponse(responseCode = "404", description = "Second item failed and the whole bulk operation was rolled back")
+  })
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
+      description = "Bulk array where the first element is valid and the second one is invalid",
+      content = @Content(
+          mediaType = "application/json",
+          array = @ArraySchema(schema = @Schema(implementation = RoadMapItemBulkCreateDto.class)),
+          examples = @ExampleObject(
+              name = "FirstValidSecondInvalid",
+              value = BULK_PARTIAL_FAILURE_EXAMPLE)))
+  public List<RoadMapItemDto> createBulkWithTransactional(
+      @Parameter(description = "Roadmap id that will own all created items", example = "2")
+      @PathVariable @Positive Long roadMapId,
+      @Valid @RequestBody @NotEmpty List<@Valid RoadMapItemBulkCreateDto> dtos) {
+    return roadMapItemService.createBulkWithTransactional(roadMapId, dtos);
   }
 
   @GetMapping("/{id}")

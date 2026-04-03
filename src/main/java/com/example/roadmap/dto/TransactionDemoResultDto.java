@@ -29,6 +29,6 @@ public class TransactionDemoResultDto {
   @Schema(description = "How many bulk items were requested", example = "3")
   private int requestedItems;
 
-  @Schema(description = "Human-readable outcome of the demo", example = "Forced bulk failure after saving 2 items")
+  @Schema(description = "Human-readable outcome of the demo", example = "Tag with id=999999 not found")
   private String message;
 }
