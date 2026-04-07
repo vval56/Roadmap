@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,16 +40,14 @@ public class ConcurrencyDemoController {
   @PostMapping("/race-condition")
   @Operation(summary = "Run race condition demo",
       description = "Starts 50+ threads in ExecutorService, compares unsafe counter with synchronized and AtomicInteger solutions")
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Race condition experiment completed",
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = RaceConditionDemoResultDto.class),
-              examples = @ExampleObject(
-                  name = "RaceConditionDetected",
-                  value = RESPONSE_EXAMPLE))),
-      @ApiResponse(responseCode = "400", description = "Invalid thread or increment count", content = @Content)
-  })
+  @ApiResponse(responseCode = "200", description = "Race condition experiment completed",
+      content = @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = RaceConditionDemoResultDto.class),
+          examples = @ExampleObject(
+              name = "RaceConditionDetected",
+              value = RESPONSE_EXAMPLE)))
+  @ApiResponse(responseCode = "400", description = "Invalid thread or increment count", content = @Content)
   public RaceConditionDemoResultDto runRaceConditionDemo(
       @io.swagger.v3.oas.annotations.parameters.RequestBody(
           required = true,

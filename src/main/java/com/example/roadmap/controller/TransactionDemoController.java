@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,14 +73,12 @@ public class TransactionDemoController {
   @Operation(summary = "Run bulk demo without @Transactional",
       description = "Send two bulk items: the first is valid, the second contains a missing tag id. "
           + "Without one wrapping transaction the roadmap and the first item remain persisted.")
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Bulk operation result without rollback",
-          content = @Content(mediaType = "application/json",
-              schema = @Schema(implementation = TransactionDemoResultDto.class),
-              examples = @ExampleObject(
-                  name = "WithoutTransactionalResult",
-                  value = WITHOUT_TRANSACTIONAL_RESPONSE_EXAMPLE)))
-  })
+  @ApiResponse(responseCode = "200", description = "Bulk operation result without rollback",
+      content = @Content(mediaType = "application/json",
+          schema = @Schema(implementation = TransactionDemoResultDto.class),
+          examples = @ExampleObject(
+              name = "WithoutTransactionalResult",
+              value = WITHOUT_TRANSACTIONAL_RESPONSE_EXAMPLE)))
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       description = "Bulk request where the first item is valid and the second item is invalid",
@@ -100,14 +97,12 @@ public class TransactionDemoController {
   @Operation(summary = "Run bulk demo with @Transactional",
       description = "Send the same two bulk items: the first is valid, the second contains a missing tag id. "
           + "Inside one transaction both the roadmap and the first item are rolled back.")
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Bulk operation result with rollback",
-          content = @Content(mediaType = "application/json",
-              schema = @Schema(implementation = TransactionDemoResultDto.class),
-              examples = @ExampleObject(
-                  name = "WithTransactionalResult",
-                  value = WITH_TRANSACTIONAL_RESPONSE_EXAMPLE)))
-  })
+  @ApiResponse(responseCode = "200", description = "Bulk operation result with rollback",
+      content = @Content(mediaType = "application/json",
+          schema = @Schema(implementation = TransactionDemoResultDto.class),
+          examples = @ExampleObject(
+              name = "WithTransactionalResult",
+              value = WITH_TRANSACTIONAL_RESPONSE_EXAMPLE)))
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       description = "Bulk request where the first item is valid and the second item is invalid",

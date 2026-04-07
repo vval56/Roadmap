@@ -1,9 +1,9 @@
 package com.example.roadmap.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.roadmap.dto.RoadMapAnalyticsReportDto;
@@ -65,6 +65,64 @@ class RoadMapAnalyticsAsyncWorkerTest {
 
     verify(asyncTaskRegistryService).markRunning("report-1002");
     verify(asyncTaskRegistryService).fail("report-1002", "RoadMap with id=999 not found");
+  }
+
+  @Test
+  void shouldFailTaskWithGenericMessageWhenRepositoryThrowsBlankMessage() {
+    when(roadMapRepository.findDetailedById(2L)).thenThrow(new IllegalStateException("   "));
+
+    roadMapAnalyticsAsyncWorker.generateReportAsync("report-1003", 2L).join();
+
+    verify(asyncTaskRegistryService).markRunning("report-1003");
+    verify(asyncTaskRegistryService).fail("report-1003", "Async report generation failed");
+  }
+
+  @Test
+  void shouldFailTaskWithGenericMessageWhenRepositoryThrowsNullMessage() {
+    when(roadMapRepository.findDetailedById(8L)).thenThrow(new IllegalStateException());
+
+    roadMapAnalyticsAsyncWorker.generateReportAsync("report-1006", 8L).join();
+
+    verify(asyncTaskRegistryService).markRunning("report-1006");
+    verify(asyncTaskRegistryService).fail("report-1006", "Async report generation failed");
+  }
+
+  @Test
+  void shouldFailTaskWhenThreadIsInterruptedBeforeSleep() {
+    Thread.currentThread().interrupt();
+    try {
+      roadMapAnalyticsAsyncWorker.generateReportAsync("report-1004", 2L).join();
+    } finally {
+      Thread.interrupted();
+    }
+
+    verify(asyncTaskRegistryService).markRunning("report-1004");
+    verify(asyncTaskRegistryService).fail("report-1004", "Async report generation was interrupted");
+    verifyNoMoreInteractions(roadMapRepository);
+  }
+
+  @Test
+  void shouldGenerateZeroCompletionRateForEmptyRoadMap() {
+    RoadMap roadMap = new RoadMap();
+    User owner = new User();
+    owner.setEmail("vladislav@example.com");
+    roadMap.setId(7L);
+    roadMap.setTitle("Empty roadmap");
+    roadMap.setOwner(owner);
+    when(roadMapRepository.findDetailedById(7L)).thenReturn(Optional.of(roadMap));
+
+    roadMapAnalyticsAsyncWorker.generateReportAsync("report-1005", 7L).join();
+
+    ArgumentCaptor<RoadMapAnalyticsReportDto> reportCaptor = ArgumentCaptor.forClass(RoadMapAnalyticsReportDto.class);
+    verify(asyncTaskRegistryService).complete(eq("report-1005"), reportCaptor.capture());
+    RoadMapAnalyticsReportDto report = reportCaptor.getValue();
+    assertEquals(0, report.getTotalItems());
+    assertEquals(0, report.getPlannedItems());
+    assertEquals(0, report.getInProgressItems());
+    assertEquals(0, report.getDoneItems());
+    assertEquals(0, report.getTotalComments());
+    assertEquals(0.0, report.getCompletionRatePercent());
+    assertEquals(java.util.List.of(), report.getDistinctTagNames());
   }
 
   private RoadMap roadMap() {

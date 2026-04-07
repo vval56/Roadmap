@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -78,16 +77,14 @@ public class AsyncTaskController {
   @Operation(summary = "Start async roadmap analytics report generation",
       description = "Creates a background task that calculates analytics for one roadmap and returns task id immediately. "
           + "If roadmap does not exist, task will move to FAILED status and the error can be observed through polling.")
-  @ApiResponses({
-      @ApiResponse(responseCode = "202", description = "Async task accepted for background execution",
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = AsyncTaskSubmissionDto.class),
-              examples = @ExampleObject(
-                  name = "AsyncTaskAccepted",
-                  value = SUBMISSION_RESPONSE_EXAMPLE))),
-      @ApiResponse(responseCode = "400", description = "Invalid roadmap id", content = @Content)
-  })
+  @ApiResponse(responseCode = "202", description = "Async task accepted for background execution",
+      content = @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = AsyncTaskSubmissionDto.class),
+          examples = @ExampleObject(
+              name = "AsyncTaskAccepted",
+              value = SUBMISSION_RESPONSE_EXAMPLE)))
+  @ApiResponse(responseCode = "400", description = "Invalid roadmap id", content = @Content)
   public AsyncTaskSubmissionDto startRoadMapAnalyticsReport(
       @Parameter(description = "Roadmap id for which analytics report should be generated", example = "2")
       @PathVariable @Positive Long roadMapId) {
@@ -96,16 +93,14 @@ public class AsyncTaskController {
 
   @GetMapping("/{taskId}")
   @Operation(summary = "Get async task status")
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Current task status returned",
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = AsyncTaskStatusDto.class),
-              examples = @ExampleObject(
-                  name = "CompletedStatus",
-                  value = COMPLETED_STATUS_EXAMPLE))),
-      @ApiResponse(responseCode = "404", description = "Task id not found", content = @Content)
-  })
+  @ApiResponse(responseCode = "200", description = "Current task status returned",
+      content = @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = AsyncTaskStatusDto.class),
+          examples = @ExampleObject(
+              name = "CompletedStatus",
+              value = COMPLETED_STATUS_EXAMPLE)))
+  @ApiResponse(responseCode = "404", description = "Task id not found", content = @Content)
   public AsyncTaskStatusDto getTaskStatus(
       @Parameter(description = "Async task id", example = "report-1001")
       @PathVariable String taskId) {

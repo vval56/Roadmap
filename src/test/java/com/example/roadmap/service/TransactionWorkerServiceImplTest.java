@@ -190,17 +190,6 @@ class TransactionWorkerServiceImplTest {
     assertEquals("RoadMapItem with id=55 not found", exception.getMessage());
   }
 
-  private TransactionDemoRequestDto demoRequest() {
-    TransactionDemoRequestDto requestDto = new TransactionDemoRequestDto();
-    requestDto.setOwnerId(1L);
-    requestDto.setRoadMapTitle("Transactional bulk demo");
-    requestDto.setItems(List.of(
-        bulkItem("Step 1", " First ", ItemStatus.PLANNED, Set.of(2L)),
-        bulkItem("Step 2", " Second ", ItemStatus.IN_PROGRESS, Set.of())
-    ));
-    return requestDto;
-  }
-
   private TransactionDemoRequestDto missingTagOnSecondItemRequest() {
     TransactionDemoRequestDto requestDto = new TransactionDemoRequestDto();
     requestDto.setOwnerId(1L);

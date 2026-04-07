@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.Valid;
@@ -86,10 +85,8 @@ public class RoadMapItemController {
   @Operation(summary = "Bulk create roadmap items without @Transactional",
       description = "Send two items: the first valid and the second invalid. "
           + "After the error, use GET /api/roadmap-items to confirm that the first item remained in the database.")
-  @ApiResponses({
-      @ApiResponse(responseCode = "201", description = "All items were created"),
-      @ApiResponse(responseCode = "404", description = "Second item failed after partial persistence")
-  })
+  @ApiResponse(responseCode = "201", description = "All items were created")
+  @ApiResponse(responseCode = "404", description = "Second item failed after partial persistence")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       description = "Bulk array where the first element is valid and the second one is invalid",
@@ -111,10 +108,8 @@ public class RoadMapItemController {
   @Operation(summary = "Bulk create roadmap items with @Transactional",
       description = "Send the same two items: the first valid and the second invalid. "
           + "After the error, use GET /api/roadmap-items to confirm that the first item was rolled back.")
-  @ApiResponses({
-      @ApiResponse(responseCode = "201", description = "All items were created"),
-      @ApiResponse(responseCode = "404", description = "Second item failed and the whole bulk operation was rolled back")
-  })
+  @ApiResponse(responseCode = "201", description = "All items were created")
+  @ApiResponse(responseCode = "404", description = "Second item failed and the whole bulk operation was rolled back")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       description = "Bulk array where the first element is valid and the second one is invalid",

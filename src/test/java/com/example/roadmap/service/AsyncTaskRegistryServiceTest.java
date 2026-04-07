@@ -3,11 +3,13 @@ package com.example.roadmap.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.example.roadmap.dto.AsyncTaskCountersDto;
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
 import com.example.roadmap.dto.RoadMapAnalyticsReportDto;
+import com.example.roadmap.exception.ResourceNotFoundException;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 
@@ -74,5 +76,53 @@ class AsyncTaskRegistryServiceTest {
     assertEquals(0L, counters.getRunningTasks());
     assertEquals(1L, counters.getCompletedTasks());
     assertEquals(0L, counters.getFailedTasks());
+  }
+
+  @Test
+  void shouldNotDoubleCountWhenTaskIsMarkedRunningOrCompletedTwice() {
+    String taskId = asyncTaskRegistryService.registerRoadMapReportTask(3L);
+    RoadMapAnalyticsReportDto report = new RoadMapAnalyticsReportDto();
+    report.setRoadMapId(3L);
+
+    asyncTaskRegistryService.markRunning(taskId);
+    asyncTaskRegistryService.markRunning(taskId);
+    asyncTaskRegistryService.complete(taskId, report);
+    asyncTaskRegistryService.complete(taskId, report);
+    asyncTaskRegistryService.fail(taskId, "ignored");
+
+    AsyncTaskStatusDto status = asyncTaskRegistryService.getStatus(taskId);
+    AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
+
+    assertEquals(AsyncTaskStatus.COMPLETED, status.getStatus());
+    assertEquals(1L, counters.getSubmittedTasks());
+    assertEquals(0L, counters.getRunningTasks());
+    assertEquals(1L, counters.getCompletedTasks());
+    assertEquals(0L, counters.getFailedTasks());
+  }
+
+  @Test
+  void shouldFailPendingTaskWithoutRunningState() {
+    String taskId = asyncTaskRegistryService.registerRoadMapReportTask(4L);
+
+    asyncTaskRegistryService.fail(taskId, "Failed before worker start");
+
+    AsyncTaskStatusDto status = asyncTaskRegistryService.getStatus(taskId);
+    AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
+
+    assertEquals(AsyncTaskStatus.FAILED, status.getStatus());
+    assertNotNull(status.getStartedAt());
+    assertNotNull(status.getCompletedAt());
+    assertEquals("Failed before worker start", status.getErrorMessage());
+    assertEquals(0L, counters.getRunningTasks());
+    assertEquals(0L, counters.getCompletedTasks());
+    assertEquals(1L, counters.getFailedTasks());
+  }
+
+  @Test
+  void shouldThrowWhenTaskDoesNotExist() {
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        () -> asyncTaskRegistryService.getStatus("report-9999"));
+
+    assertEquals("Async task with id=report-9999 not found", exception.getMessage());
   }
 }
