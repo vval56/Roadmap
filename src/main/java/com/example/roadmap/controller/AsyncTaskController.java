@@ -31,15 +31,15 @@ public class AsyncTaskController {
 
   private static final String SUBMISSION_RESPONSE_EXAMPLE = """
       {
-        "taskId": "report-1001",
+        "taskId": "91e0c13b-81d3-43a0-b687-dc25c6cb9497",
         "status": "PENDING",
-        "statusEndpoint": "/api/async-tasks/report-1001"
+        "statusEndpoint": "/api/async-tasks/91e0c13b-81d3-43a0-b687-dc25c6cb9497"
       }
       """;
 
   private static final String COMPLETED_STATUS_EXAMPLE = """
       {
-        "taskId": "report-1001",
+        "taskId": "91e0c13b-81d3-43a0-b687-dc25c6cb9497",
         "roadMapId": 2,
         "status": "COMPLETED",
         "createdAt": "2026-04-07T12:00:00+03:00",
@@ -102,7 +102,7 @@ public class AsyncTaskController {
               value = COMPLETED_STATUS_EXAMPLE)))
   @ApiResponse(responseCode = "404", description = "Task id not found", content = @Content)
   public AsyncTaskStatusDto getTaskStatus(
-      @Parameter(description = "Async task id", example = "report-1001")
+      @Parameter(description = "Async task id", example = "91e0c13b-81d3-43a0-b687-dc25c6cb9497")
       @PathVariable String taskId) {
     return roadMapAnalyticsTaskService.getTaskStatus(taskId);
   }

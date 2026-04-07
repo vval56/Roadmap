@@ -25,6 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(GlobalExceptionHandler.class)
 class AsyncTaskControllerTest {
 
+  private static final String TASK_ID = "91e0c13b-81d3-43a0-b687-dc25c6cb9497";
+
   @Autowired
   private MockMvc mockMvc;
 
@@ -35,22 +37,22 @@ class AsyncTaskControllerTest {
   void startShouldReturnAcceptedTaskSubmission() throws Exception {
     when(roadMapAnalyticsTaskService.submitRoadMapReport(2L))
         .thenReturn(new AsyncTaskSubmissionDto(
-            "report-1001",
+            TASK_ID,
             AsyncTaskStatus.PENDING,
-            "/api/async-tasks/report-1001"));
+            "/api/async-tasks/" + TASK_ID));
 
     mockMvc.perform(post("/api/async-tasks/roadmaps/2/analytics-report"))
         .andExpect(status().isAccepted())
-        .andExpect(jsonPath("$.taskId").value("report-1001"))
+        .andExpect(jsonPath("$.taskId").value(TASK_ID))
         .andExpect(jsonPath("$.status").value("PENDING"))
-        .andExpect(jsonPath("$.statusEndpoint").value("/api/async-tasks/report-1001"));
+        .andExpect(jsonPath("$.statusEndpoint").value("/api/async-tasks/" + TASK_ID));
   }
 
   @Test
   void getStatusShouldReturnTaskDetails() throws Exception {
-    when(roadMapAnalyticsTaskService.getTaskStatus("report-1001"))
+    when(roadMapAnalyticsTaskService.getTaskStatus(TASK_ID))
         .thenReturn(new AsyncTaskStatusDto(
-            "report-1001",
+            TASK_ID,
             2L,
             AsyncTaskStatus.COMPLETED,
             OffsetDateTime.parse("2026-04-07T12:00:00+03:00"),
@@ -59,9 +61,9 @@ class AsyncTaskControllerTest {
             null,
             null));
 
-    mockMvc.perform(get("/api/async-tasks/report-1001"))
+    mockMvc.perform(get("/api/async-tasks/" + TASK_ID))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.taskId").value("report-1001"))
+        .andExpect(jsonPath("$.taskId").value(TASK_ID))
         .andExpect(jsonPath("$.roadMapId").value(2))
         .andExpect(jsonPath("$.status").value("COMPLETED"));
   }

@@ -6,6 +6,7 @@ import com.example.roadmap.dto.AsyncTaskStatusDto;
 import com.example.roadmap.dto.RoadMapAnalyticsReportDto;
 import com.example.roadmap.exception.ResourceNotFoundException;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,14 +16,13 @@ import org.springframework.stereotype.Service;
 public class AsyncTaskRegistryService {
 
   private final ConcurrentMap<String, AsyncTaskState> tasks = new ConcurrentHashMap<>();
-  private final AtomicLong taskSequence = new AtomicLong(1000);
   private final AtomicLong submittedTasks = new AtomicLong();
   private final AtomicLong runningTasks = new AtomicLong();
   private final AtomicLong completedTasks = new AtomicLong();
   private final AtomicLong failedTasks = new AtomicLong();
 
   public String registerRoadMapReportTask(Long roadMapId) {
-    String taskId = "report-" + taskSequence.incrementAndGet();
+    String taskId = UUID.randomUUID().toString();
     tasks.put(taskId, AsyncTaskState.pending(taskId, roadMapId));
     submittedTasks.incrementAndGet();
     return taskId;

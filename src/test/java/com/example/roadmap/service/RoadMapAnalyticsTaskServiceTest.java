@@ -18,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RoadMapAnalyticsTaskServiceTest {
 
+  private static final String TASK_ID = "91e0c13b-81d3-43a0-b687-dc25c6cb9497";
+
   @Mock
   private AsyncTaskRegistryService asyncTaskRegistryService;
 
@@ -29,23 +31,23 @@ class RoadMapAnalyticsTaskServiceTest {
 
   @Test
   void submitRoadMapReportShouldRegisterTaskAndStartAsyncWorker() {
-    when(asyncTaskRegistryService.registerRoadMapReportTask(2L)).thenReturn("report-1001");
-    when(roadMapAnalyticsAsyncWorker.generateReportAsync("report-1001", 2L))
+    when(asyncTaskRegistryService.registerRoadMapReportTask(2L)).thenReturn(TASK_ID);
+    when(roadMapAnalyticsAsyncWorker.generateReportAsync(TASK_ID, 2L))
         .thenReturn(CompletableFuture.completedFuture(null));
 
     var response = roadMapAnalyticsTaskService.submitRoadMapReport(2L);
 
-    assertEquals("report-1001", response.getTaskId());
+    assertEquals(TASK_ID, response.getTaskId());
     assertEquals(AsyncTaskStatus.PENDING, response.getStatus());
-    assertEquals("/api/async-tasks/report-1001", response.getStatusEndpoint());
+    assertEquals("/api/async-tasks/" + TASK_ID, response.getStatusEndpoint());
     verify(asyncTaskRegistryService).registerRoadMapReportTask(2L);
-    verify(roadMapAnalyticsAsyncWorker).generateReportAsync("report-1001", 2L);
+    verify(roadMapAnalyticsAsyncWorker).generateReportAsync(TASK_ID, 2L);
   }
 
   @Test
   void getTaskStatusShouldDelegateToRegistry() {
     AsyncTaskStatusDto expected = new AsyncTaskStatusDto(
-        "report-1001",
+        TASK_ID,
         2L,
         AsyncTaskStatus.RUNNING,
         OffsetDateTime.parse("2026-04-07T12:00:00+03:00"),
@@ -53,9 +55,9 @@ class RoadMapAnalyticsTaskServiceTest {
         null,
         null,
         null);
-    when(asyncTaskRegistryService.getStatus("report-1001")).thenReturn(expected);
+    when(asyncTaskRegistryService.getStatus(TASK_ID)).thenReturn(expected);
 
-    AsyncTaskStatusDto actual = roadMapAnalyticsTaskService.getTaskStatus("report-1001");
+    AsyncTaskStatusDto actual = roadMapAnalyticsTaskService.getTaskStatus(TASK_ID);
 
     assertEquals(expected.getTaskId(), actual.getTaskId());
     assertEquals(expected.getRoadMapId(), actual.getRoadMapId());
