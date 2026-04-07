@@ -5,6 +5,7 @@ postman/
 logs/
 .DS_Store
 .mvn/wrapper/maven-wrapper.jar
+jmeter/
 
 ### STS ###
 .apt_generated

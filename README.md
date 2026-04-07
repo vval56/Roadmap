@@ -32,6 +32,9 @@ Spring Boot REST API для управления roadmap-структурой о
 - единый JSON-формат ошибок для всех endpoint
 - валидация входных данных через `@Valid`, `@Validated`, Bean Validation constraints
 - использование `Stream API` и `Optional` в сервисном слое
+- асинхронная бизнес-операция через `@Async` / `CompletableFuture` с `taskId` и polling статуса
+- потокобезопасные счётчики async-задач на `AtomicLong`
+- демонстрация race condition на `ExecutorService` (50+ потоков) и решение через `synchronized` / `AtomicInteger`
 - логирование через `logback-spring.xml` с ротацией логов
 - AOP-логирование времени выполнения сервисных методов
 - Swagger/OpenAPI через `springdoc`
@@ -39,17 +42,19 @@ Spring Boot REST API для управления roadmap-структурой о
 ## Структура проекта
 ```text
 RoadMap2026/
-├── .gitattributes
-├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── sonar.yml
 ├── .mvn/
 │   └── wrapper/
-│       └── maven-wrapper.properties
 ├── .vscode/
-│   ├── extensions.json
-│   ├── launch.json
-│   └── settings.json
+├── jmeter/
+│   ├── README.md
+│   ├── RoadMap2026_Lab7_Async_Concurrency_Load_Test.jmx
+│   └── results/
+├── postman/
+│   └── collections/
 ├── README.md
-├── api.iml
 ├── docker-compose.yml
 ├── google_checks.xml
 ├── mvnw
@@ -59,72 +64,52 @@ RoadMap2026/
     ├── main/
     │   ├── java/com/example/roadmap/
     │   │   ├── RoadMap2026Application.java
+    │   │   ├── aspect/
     │   │   ├── bootstrap/
-    │   │   │   └── DataInitializer.java
     │   │   ├── cache/
-    │   │   │   ├── RoadMapItemSearchIndexService.java
-    │   │   │   └── RoadMapItemSearchKey.java
+    │   │   ├── config/
     │   │   ├── controller/
+    │   │   │   ├── AsyncTaskController.java
     │   │   │   ├── CommentController.java
+    │   │   │   ├── ConcurrencyDemoController.java
     │   │   │   ├── RoadMapController.java
     │   │   │   ├── RoadMapItemController.java
     │   │   │   ├── TagController.java
     │   │   │   ├── TransactionDemoController.java
     │   │   │   └── UserController.java
     │   │   ├── dto/
-    │   │   │   ├── CommentDto.java
-    │   │   │   ├── CommentMapper.java
-    │   │   │   ├── RoadMapDto.java
-    │   │   │   ├── RoadMapItemBulkCreateDto.java
-    │   │   │   ├── RoadMapItemDto.java
-    │   │   │   ├── RoadMapItemMapper.java
-    │   │   │   ├── RoadMapItemWithTagsDto.java
-    │   │   │   ├── RoadMapMapper.java
-    │   │   │   ├── TagDto.java
-    │   │   │   ├── TagMapper.java
-    │   │   │   ├── TransactionDemoRequestDto.java
-    │   │   │   ├── TransactionDemoResultDto.java
-    │   │   │   ├── UserDto.java
-    │   │   │   └── UserMapper.java
+    │   │   │   ├── AsyncTaskCountersDto.java
+    │   │   │   ├── AsyncTaskStatus.java
+    │   │   │   ├── AsyncTaskStatusDto.java
+    │   │   │   ├── AsyncTaskSubmissionDto.java
+    │   │   │   ├── BaseRoadMapItemRequestDto.java
+    │   │   │   ├── RaceConditionDemoRequestDto.java
+    │   │   │   ├── RaceConditionDemoResultDto.java
+    │   │   │   ├── RoadMapAnalyticsReportDto.java
+    │   │   │   └── ...
     │   │   ├── exception/
-    │   │   │   └── ResourceNotFoundException.java
     │   │   ├── model/
-    │   │   │   ├── Comment.java
-    │   │   │   ├── ItemStatus.java
-    │   │   │   ├── RoadMap.java
-    │   │   │   ├── RoadMapItem.java
-    │   │   │   ├── Tag.java
-    │   │   │   └── User.java
     │   │   ├── repository/
-    │   │   │   ├── CommentRepository.java
-    │   │   │   ├── RoadMapItemRepository.java
-    │   │   │   ├── RoadMapRepository.java
-    │   │   │   ├── TagRepository.java
-    │   │   │   └── UserRepository.java
     │   │   └── service/
-    │   │       ├── CommentService.java
-    │   │       ├── CommentServiceImpl.java
-    │   │       ├── RoadMapItemService.java
-    │   │       ├── RoadMapItemServiceImpl.java
-    │   │       ├── RoadMapService.java
-    │   │       ├── RoadMapServiceImpl.java
-    │   │       ├── TagService.java
-    │   │       ├── TagServiceImpl.java
-    │   │       ├── TransactionDemoService.java
-    │   │       ├── TransactionDemoServiceImpl.java
-    │   │       ├── TransactionWorkerService.java
-    │   │       ├── TransactionWorkerServiceImpl.java
-    │   │       ├── UserService.java
-    │   │       └── UserServiceImpl.java
+    │   │       ├── AsyncTaskRegistryService.java
+    │   │       ├── ConcurrencyDemoService.java
+    │   │       ├── RoadMapAnalyticsAsyncWorker.java
+    │   │       ├── RoadMapAnalyticsTaskService.java
+    │   │       └── ...
     │   └── resources/
-    │       └── application.properties
+    │       ├── application.properties
+    │       └── logback-spring.xml
     └── test/
         ├── java/com/example/roadmap/
+        │   ├── controller/
+        │   ├── service/
+        │   │   ├── AsyncTaskRegistryServiceTest.java
+        │   │   ├── ConcurrencyDemoServiceTest.java
+        │   │   ├── RoadMapAnalyticsAsyncWorkerTest.java
+        │   │   └── ...
         │   └── RoadMap2026ApplicationTests.java
         └── resources/
-            ├── application.properties
             └── mockito-extensions/
-                └── org.mockito.plugins.MockMaker
 ```
 
 ## Запуск инфраструктуры
@@ -160,6 +145,12 @@ CRUD:
 - `/api/roadmap-items`
 - `/api/tags`
 - `/api/comments`
+
+Асинхронность и многопоточность:
+- `POST /api/async-tasks/roadmaps/{roadMapId}/analytics-report`
+- `GET /api/async-tasks/{taskId}`
+- `GET /api/async-tasks/metrics`
+- `POST /api/concurrency/race-condition`
 
 Bulk-операция:
 - `POST /api/roadmap-items/bulk/{roadMapId}`
@@ -244,6 +235,54 @@ Content-Type: application/json
 ## Swagger / OpenAPI
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/api-docs`
+
+## JMeter
+- тест-план: `jmeter/RoadMap2026_Lab7_Async_Concurrency_Load_Test.jmx`
+- инструкция запуска: `jmeter/README.md`
+- шаблон для фиксации результатов: `jmeter/results/README.md`
+
+## Lab 7: Асинхронность и многопоточность
+
+Асинхронная бизнес-операция:
+- `POST /api/async-tasks/roadmaps/{roadMapId}/analytics-report` сразу возвращает `202 Accepted` и `taskId`
+- `GET /api/async-tasks/{taskId}` позволяет проверить `PENDING`, `RUNNING`, `COMPLETED`, `FAILED`
+- `GET /api/async-tasks/metrics` показывает потокобезопасные счётчики задач на `AtomicLong`
+
+Пример запуска async-задачи:
+```http
+POST /api/async-tasks/roadmaps/2/analytics-report
+```
+
+Пример ответа:
+```json
+{
+  "taskId": "report-1001",
+  "status": "PENDING",
+  "statusEndpoint": "/api/async-tasks/report-1001"
+}
+```
+
+Пример проверки статуса:
+```http
+GET /api/async-tasks/report-1001
+```
+
+Демонстрация race condition:
+- `POST /api/concurrency/race-condition`
+- используются `ExecutorService`, `64+` потоков, `UnsafeCounter`, `synchronized`, `AtomicInteger`
+
+Пример запроса:
+```json
+{
+  "threadCount": 64,
+  "incrementsPerThread": 5000
+}
+```
+
+Что проверять в ответе:
+- `expectedValue` должен быть равен `threadCount * incrementsPerThread`
+- `unsafeCounterValue` обычно меньше ожидаемого из-за race condition
+- `synchronizedCounterValue` и `atomicCounterValue` должны совпадать с ожидаемым значением
 
 ## Логи
 - активная конфигурация: `src/main/resources/logback-spring.xml`
