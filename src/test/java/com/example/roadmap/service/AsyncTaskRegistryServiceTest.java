@@ -101,6 +101,29 @@ class AsyncTaskRegistryServiceTest {
   }
 
   @Test
+  void shouldNotChangeCountersWhenFailedTaskIsFinishedAgain() {
+    String taskId = asyncTaskRegistryService.registerRoadMapReportTask(5L);
+    RoadMapAnalyticsReportDto report = new RoadMapAnalyticsReportDto();
+    report.setRoadMapId(5L);
+
+    asyncTaskRegistryService.markRunning(taskId);
+    asyncTaskRegistryService.fail(taskId, "Initial failure");
+    asyncTaskRegistryService.complete(taskId, report);
+    asyncTaskRegistryService.fail(taskId, "Ignored failure");
+
+    AsyncTaskStatusDto status = asyncTaskRegistryService.getStatus(taskId);
+    AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
+
+    assertEquals(AsyncTaskStatus.FAILED, status.getStatus());
+    assertEquals("Initial failure", status.getErrorMessage());
+    assertNull(status.getReport());
+    assertEquals(1L, counters.getSubmittedTasks());
+    assertEquals(0L, counters.getRunningTasks());
+    assertEquals(0L, counters.getCompletedTasks());
+    assertEquals(1L, counters.getFailedTasks());
+  }
+
+  @Test
   void shouldFailPendingTaskWithoutRunningState() {
     String taskId = asyncTaskRegistryService.registerRoadMapReportTask(4L);
 
