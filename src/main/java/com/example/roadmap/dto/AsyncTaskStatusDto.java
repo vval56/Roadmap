@@ -12,7 +12,8 @@ import lombok.Getter;
 @Schema(description = "Detailed async task status with optional result")
 public class AsyncTaskStatusDto {
 
-  @Schema(description = "Async task identifier", example = "report-1001")
+  @Schema(description = "Async task identifier",
+      example = "91e0c13b-81d3-43a0-b687-dc25c6cb9497")
   private final String taskId;
 
   @Schema(description = "Roadmap id being processed", example = "2")

@@ -50,7 +50,7 @@ RoadMap2026/
 ├── .vscode/
 ├── jmeter/
 │   ├── README.md
-│   ├── RoadMap2026_Lab7_Async_Concurrency_Load_Test.jmx
+│   ├── RoadMap2026_Lab6_Async_Concurrency_Load_Test.jmx
 │   └── results/
 ├── postman/
 │   └── collections/
@@ -237,11 +237,11 @@ Content-Type: application/json
 - OpenAPI JSON: `http://localhost:8080/api-docs`
 
 ## JMeter
-- тест-план: `jmeter/RoadMap2026_Lab7_Async_Concurrency_Load_Test.jmx`
+- тест-план: `jmeter/RoadMap2026_Lab6_Async_Concurrency_Load_Test.jmx`
 - инструкция запуска: `jmeter/README.md`
 - шаблон для фиксации результатов: `jmeter/results/README.md`
 
-## Lab 7: Асинхронность и многопоточность
+## Lab 6: Асинхронность и многопоточность
 
 Асинхронная бизнес-операция:
 - `POST /api/async-tasks/roadmaps/{roadMapId}/analytics-report` сразу возвращает `202 Accepted` и `taskId`
@@ -256,15 +256,15 @@ POST /api/async-tasks/roadmaps/2/analytics-report
 Пример ответа:
 ```json
 {
-  "taskId": "report-1001",
+  "taskId": "91e0c13b-81d3-43a0-b687-dc25c6cb9497",
   "status": "PENDING",
-  "statusEndpoint": "/api/async-tasks/report-1001"
+  "statusEndpoint": "/api/async-tasks/91e0c13b-81d3-43a0-b687-dc25c6cb9497"
 }
 ```
 
 Пример проверки статуса:
 ```http
-GET /api/async-tasks/report-1001
+GET /api/async-tasks/91e0c13b-81d3-43a0-b687-dc25c6cb9497
 ```
 
 Демонстрация race condition:
