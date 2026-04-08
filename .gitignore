@@ -6,6 +6,7 @@ logs/
 .DS_Store
 .mvn/wrapper/maven-wrapper.jar
 jmeter/
+jmeter.log
 
 ### STS ###
 .apt_generated
