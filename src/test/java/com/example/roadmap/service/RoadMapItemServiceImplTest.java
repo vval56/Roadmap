@@ -169,6 +169,39 @@ class RoadMapItemServiceImplTest {
   }
 
   @Test
+  void createBulkWithoutTransactionalShouldReturnDtoForValidPayload() {
+    RoadMap roadMap = new RoadMap();
+    roadMap.setId(1L);
+
+    Tag springTag = new Tag();
+    springTag.setId(2L);
+
+    when(roadMapRepository.findById(1L)).thenReturn(java.util.Optional.of(roadMap));
+    when(tagRepository.findById(2L)).thenReturn(java.util.Optional.of(springTag));
+    when(roadMapItemRepository.save(any(RoadMapItem.class))).thenAnswer(invocation -> {
+      RoadMapItem incoming = invocation.getArgument(0);
+      RoadMapItem persisted = new RoadMapItem();
+      persisted.setId(101L);
+      persisted.setTitle(incoming.getTitle());
+      persisted.setDetails(incoming.getDetails());
+      persisted.setStatus(incoming.getStatus());
+      return persisted;
+    });
+
+    List<RoadMapItemBulkCreateDto> payload = List.of(
+        bulkItem("Valid item", "First", ItemStatus.PLANNED, Set.of(2L))
+    );
+
+    List<RoadMapItemDto> result = roadMapItemService.createBulkWithoutTransactional(1L, payload);
+
+    assertEquals(1, result.size());
+    assertEquals(101L, result.getFirst().getId());
+    assertEquals(1L, result.getFirst().getRoadMapId());
+    assertEquals(Set.of(2L), result.getFirst().getTagIds());
+    verify(searchIndexService).invalidateAll();
+  }
+
+  @Test
   void createBulkWithTransactionalShouldThrowWhenSecondItemFails() {
     RoadMap roadMap = new RoadMap();
     roadMap.setId(1L);

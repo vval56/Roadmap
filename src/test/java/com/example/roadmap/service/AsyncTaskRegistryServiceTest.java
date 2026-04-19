@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.example.roadmap.dto.AsyncTaskCountersDto;
+import com.example.roadmap.dto.AsyncRoadMapItemBulkResultDto;
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
+import com.example.roadmap.dto.AsyncTaskType;
 import com.example.roadmap.dto.RoadMapAnalyticsReportDto;
 import com.example.roadmap.exception.ResourceNotFoundException;
 import java.time.OffsetDateTime;
@@ -33,10 +35,12 @@ class AsyncTaskRegistryServiceTest {
     AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
 
     assertEquals(AsyncTaskStatus.COMPLETED, status.getStatus());
+    assertEquals(AsyncTaskType.ROADMAP_ANALYTICS_REPORT, status.getTaskType());
     assertEquals(2L, status.getRoadMapId());
     assertNotNull(status.getStartedAt());
     assertNotNull(status.getCompletedAt());
     assertNotNull(status.getReport());
+    assertNull(status.getBulkResult());
     assertEquals(1L, counters.getSubmittedTasks());
     assertEquals(0L, counters.getRunningTasks());
     assertEquals(1L, counters.getCompletedTasks());
@@ -54,8 +58,10 @@ class AsyncTaskRegistryServiceTest {
     AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
 
     assertEquals(AsyncTaskStatus.FAILED, status.getStatus());
+    assertEquals(AsyncTaskType.ROADMAP_ANALYTICS_REPORT, status.getTaskType());
     assertEquals("RoadMap with id=999 not found", status.getErrorMessage());
     assertNull(status.getReport());
+    assertNull(status.getBulkResult());
     assertEquals(1L, counters.getSubmittedTasks());
     assertEquals(0L, counters.getRunningTasks());
     assertEquals(0L, counters.getCompletedTasks());
@@ -94,6 +100,7 @@ class AsyncTaskRegistryServiceTest {
     AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
 
     assertEquals(AsyncTaskStatus.COMPLETED, status.getStatus());
+    assertEquals(AsyncTaskType.ROADMAP_ANALYTICS_REPORT, status.getTaskType());
     assertEquals(1L, counters.getSubmittedTasks());
     assertEquals(0L, counters.getRunningTasks());
     assertEquals(1L, counters.getCompletedTasks());
@@ -117,6 +124,7 @@ class AsyncTaskRegistryServiceTest {
     assertEquals(AsyncTaskStatus.FAILED, status.getStatus());
     assertEquals("Initial failure", status.getErrorMessage());
     assertNull(status.getReport());
+    assertNull(status.getBulkResult());
     assertEquals(1L, counters.getSubmittedTasks());
     assertEquals(0L, counters.getRunningTasks());
     assertEquals(0L, counters.getCompletedTasks());
@@ -133,6 +141,7 @@ class AsyncTaskRegistryServiceTest {
     AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
 
     assertEquals(AsyncTaskStatus.FAILED, status.getStatus());
+    assertEquals(AsyncTaskType.ROADMAP_ANALYTICS_REPORT, status.getTaskType());
     assertNotNull(status.getStartedAt());
     assertNotNull(status.getCompletedAt());
     assertEquals("Failed before worker start", status.getErrorMessage());
@@ -147,5 +156,34 @@ class AsyncTaskRegistryServiceTest {
         () -> asyncTaskRegistryService.getStatus("report-9999"));
 
     assertEquals("Async task with id=report-9999 not found", exception.getMessage());
+  }
+
+  @Test
+  void shouldTrackCompletedAsyncBulkTaskAndCounters() {
+    String taskId = asyncTaskRegistryService.registerRoadMapItemBulkTask(32L);
+
+    asyncTaskRegistryService.markRunning(taskId);
+
+    AsyncRoadMapItemBulkResultDto bulkResult = new AsyncRoadMapItemBulkResultDto();
+    bulkResult.setRoadMapId(32L);
+    bulkResult.setCreatedItemsCount(2);
+    bulkResult.setCreatedItemIds(java.util.List.of(101L, 102L));
+    bulkResult.setFinishedAt(OffsetDateTime.now());
+    asyncTaskRegistryService.completeBulk(taskId, bulkResult);
+
+    AsyncTaskStatusDto status = asyncTaskRegistryService.getStatus(taskId);
+    AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
+
+    assertEquals(AsyncTaskStatus.COMPLETED, status.getStatus());
+    assertEquals(AsyncTaskType.ROADMAP_ITEM_BULK_CREATE, status.getTaskType());
+    assertEquals(32L, status.getRoadMapId());
+    assertNull(status.getReport());
+    assertNotNull(status.getBulkResult());
+    assertEquals(2, status.getBulkResult().getCreatedItemsCount());
+    assertEquals(java.util.List.of(101L, 102L), status.getBulkResult().getCreatedItemIds());
+    assertEquals(1L, counters.getSubmittedTasks());
+    assertEquals(0L, counters.getRunningTasks());
+    assertEquals(1L, counters.getCompletedTasks());
+    assertEquals(0L, counters.getFailedTasks());
   }
 }

@@ -50,6 +50,9 @@ RoadMap2026/
 ├── .vscode/
 ├── jmeter/
 │   ├── README.md
+│   ├── RoadMap2026_Lab6_Async_Bulk_RoadMapItem_Test.jmx
+│   ├── RoadMap2026_Lab6_GET_Boundary_Load_Test.jmx
+│   ├── RoadMap2026_Lab6_Smoke_Check.jmx
 │   ├── RoadMap2026_Lab6_Async_Concurrency_Load_Test.jmx
 │   └── results/
 ├── postman/
@@ -237,7 +240,9 @@ Content-Type: application/json
 - OpenAPI JSON: `http://localhost:8080/api-docs`
 
 ## JMeter
-- тест-план: `jmeter/RoadMap2026_Lab6_Async_Concurrency_Load_Test.jmx`
+- smoke test: `jmeter/RoadMap2026_Lab6_Smoke_Check.jmx`
+- boundary GET load test: `jmeter/RoadMap2026_Lab6_GET_Boundary_Load_Test.jmx`
+- полный тест-план: `jmeter/RoadMap2026_Lab6_Async_Concurrency_Load_Test.jmx`
 - инструкция запуска: `jmeter/README.md`
 - шаблон для фиксации результатов: `jmeter/results/README.md`
 

@@ -1,8 +1,10 @@
 package com.example.roadmap.service;
 
 import com.example.roadmap.dto.AsyncTaskCountersDto;
+import com.example.roadmap.dto.AsyncRoadMapItemBulkResultDto;
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
+import com.example.roadmap.dto.AsyncTaskType;
 import com.example.roadmap.dto.RoadMapAnalyticsReportDto;
 import com.example.roadmap.exception.ResourceNotFoundException;
 import java.time.OffsetDateTime;
@@ -22,8 +24,16 @@ public class AsyncTaskRegistryService {
   private final AtomicLong failedTasks = new AtomicLong();
 
   public String registerRoadMapReportTask(Long roadMapId) {
+    return registerTask(AsyncTaskType.ROADMAP_ANALYTICS_REPORT, roadMapId);
+  }
+
+  public String registerRoadMapItemBulkTask(Long roadMapId) {
+    return registerTask(AsyncTaskType.ROADMAP_ITEM_BULK_CREATE, roadMapId);
+  }
+
+  private String registerTask(AsyncTaskType taskType, Long roadMapId) {
     String taskId = UUID.randomUUID().toString();
-    tasks.put(taskId, AsyncTaskState.pending(taskId, roadMapId));
+    tasks.put(taskId, AsyncTaskState.pending(taskId, taskType, roadMapId));
     submittedTasks.incrementAndGet();
     return taskId;
   }
@@ -38,6 +48,17 @@ public class AsyncTaskRegistryService {
   public void complete(String taskId, RoadMapAnalyticsReportDto report) {
     AsyncTaskState task = getTask(taskId);
     FinishResult finishResult = task.markCompleted(report);
+    if (finishResult.finished()) {
+      if (finishResult.decrementRunning()) {
+        runningTasks.decrementAndGet();
+      }
+      completedTasks.incrementAndGet();
+    }
+  }
+
+  public void completeBulk(String taskId, AsyncRoadMapItemBulkResultDto bulkResult) {
+    AsyncTaskState task = getTask(taskId);
+    FinishResult finishResult = task.markCompleted(bulkResult);
     if (finishResult.finished()) {
       if (finishResult.decrementRunning()) {
         runningTasks.decrementAndGet();
@@ -80,6 +101,7 @@ public class AsyncTaskRegistryService {
 
   private static final class AsyncTaskState {
     private final String taskId;
+    private final AsyncTaskType taskType;
     private final Long roadMapId;
     private final OffsetDateTime createdAt;
     private AsyncTaskStatus status;
@@ -87,17 +109,19 @@ public class AsyncTaskRegistryService {
     private OffsetDateTime completedAt;
     private String errorMessage;
     private RoadMapAnalyticsReportDto report;
+    private AsyncRoadMapItemBulkResultDto bulkResult;
 
-    private AsyncTaskState(String taskId, Long roadMapId, OffsetDateTime createdAt,
-                           AsyncTaskStatus status) {
+    private AsyncTaskState(String taskId, AsyncTaskType taskType, Long roadMapId,
+                           OffsetDateTime createdAt, AsyncTaskStatus status) {
       this.taskId = taskId;
+      this.taskType = taskType;
       this.roadMapId = roadMapId;
       this.createdAt = createdAt;
       this.status = status;
     }
 
-    static AsyncTaskState pending(String taskId, Long roadMapId) {
-      return new AsyncTaskState(taskId, roadMapId, OffsetDateTime.now(), AsyncTaskStatus.PENDING);
+    static AsyncTaskState pending(String taskId, AsyncTaskType taskType, Long roadMapId) {
+      return new AsyncTaskState(taskId, taskType, roadMapId, OffsetDateTime.now(), AsyncTaskStatus.PENDING);
     }
 
     synchronized boolean markRunning() {
@@ -120,6 +144,23 @@ public class AsyncTaskRegistryService {
       status = AsyncTaskStatus.COMPLETED;
       completedAt = OffsetDateTime.now();
       report = completedReport;
+      bulkResult = null;
+      errorMessage = null;
+      return FinishResult.finished(decrementRunning);
+    }
+
+    synchronized FinishResult markCompleted(AsyncRoadMapItemBulkResultDto completedBulkResult) {
+      if (status == AsyncTaskStatus.COMPLETED || status == AsyncTaskStatus.FAILED) {
+        return FinishResult.NO_CHANGE;
+      }
+      boolean decrementRunning = status == AsyncTaskStatus.RUNNING;
+      if (startedAt == null) {
+        startedAt = OffsetDateTime.now();
+      }
+      status = AsyncTaskStatus.COMPLETED;
+      completedAt = OffsetDateTime.now();
+      bulkResult = completedBulkResult;
+      report = null;
       errorMessage = null;
       return FinishResult.finished(decrementRunning);
     }
@@ -136,19 +177,22 @@ public class AsyncTaskRegistryService {
       completedAt = OffsetDateTime.now();
       errorMessage = failureMessage;
       report = null;
+      bulkResult = null;
       return FinishResult.finished(decrementRunning);
     }
 
     synchronized AsyncTaskStatusDto toDto() {
       return new AsyncTaskStatusDto(
           taskId,
+          taskType,
           roadMapId,
           status,
           createdAt,
           startedAt,
           completedAt,
           errorMessage,
-          report
+          report,
+          bulkResult
       );
     }
   }

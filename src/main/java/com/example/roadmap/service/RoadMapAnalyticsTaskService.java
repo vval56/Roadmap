@@ -4,6 +4,7 @@ import com.example.roadmap.dto.AsyncTaskCountersDto;
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
 import com.example.roadmap.dto.AsyncTaskSubmissionDto;
+import com.example.roadmap.dto.AsyncTaskType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,12 @@ public class RoadMapAnalyticsTaskService {
   public AsyncTaskSubmissionDto submitRoadMapReport(Long roadMapId) {
     String taskId = asyncTaskRegistryService.registerRoadMapReportTask(roadMapId);
     roadMapAnalyticsAsyncWorker.generateReportAsync(taskId, roadMapId);
-    return new AsyncTaskSubmissionDto(taskId, AsyncTaskStatus.PENDING, "/api/async-tasks/" + taskId);
+    return new AsyncTaskSubmissionDto(
+        taskId,
+        AsyncTaskType.ROADMAP_ANALYTICS_REPORT,
+        AsyncTaskStatus.PENDING,
+        "/api/async-tasks/" + taskId
+    );
   }
 
   public AsyncTaskStatusDto getTaskStatus(String taskId) {

@@ -9,6 +9,7 @@ import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
 import java.time.OffsetDateTime;
 import java.util.concurrent.CompletableFuture;
+import com.example.roadmap.dto.AsyncTaskType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,6 +39,7 @@ class RoadMapAnalyticsTaskServiceTest {
     var response = roadMapAnalyticsTaskService.submitRoadMapReport(2L);
 
     assertEquals(TASK_ID, response.getTaskId());
+    assertEquals(AsyncTaskType.ROADMAP_ANALYTICS_REPORT, response.getTaskType());
     assertEquals(AsyncTaskStatus.PENDING, response.getStatus());
     assertEquals("/api/async-tasks/" + TASK_ID, response.getStatusEndpoint());
     verify(asyncTaskRegistryService).registerRoadMapReportTask(2L);
@@ -48,10 +50,12 @@ class RoadMapAnalyticsTaskServiceTest {
   void getTaskStatusShouldDelegateToRegistry() {
     AsyncTaskStatusDto expected = new AsyncTaskStatusDto(
         TASK_ID,
+        AsyncTaskType.ROADMAP_ANALYTICS_REPORT,
         2L,
         AsyncTaskStatus.RUNNING,
         OffsetDateTime.parse("2026-04-07T12:00:00+03:00"),
         OffsetDateTime.parse("2026-04-07T12:00:01+03:00"),
+        null,
         null,
         null,
         null);
@@ -60,6 +64,7 @@ class RoadMapAnalyticsTaskServiceTest {
     AsyncTaskStatusDto actual = roadMapAnalyticsTaskService.getTaskStatus(TASK_ID);
 
     assertEquals(expected.getTaskId(), actual.getTaskId());
+    assertEquals(expected.getTaskType(), actual.getTaskType());
     assertEquals(expected.getRoadMapId(), actual.getRoadMapId());
     assertEquals(expected.getStatus(), actual.getStatus());
     assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
@@ -67,6 +72,7 @@ class RoadMapAnalyticsTaskServiceTest {
     assertEquals(expected.getCompletedAt(), actual.getCompletedAt());
     assertEquals(expected.getErrorMessage(), actual.getErrorMessage());
     assertEquals(expected.getReport(), actual.getReport());
+    assertEquals(expected.getBulkResult(), actual.getBulkResult());
   }
 
   @Test

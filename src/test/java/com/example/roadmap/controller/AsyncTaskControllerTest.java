@@ -10,8 +10,10 @@ import com.example.roadmap.dto.AsyncTaskCountersDto;
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
 import com.example.roadmap.dto.AsyncTaskSubmissionDto;
+import com.example.roadmap.dto.AsyncTaskType;
 import com.example.roadmap.exception.GlobalExceptionHandler;
 import com.example.roadmap.exception.ResourceNotFoundException;
+import com.example.roadmap.service.RoadMapItemBulkAsyncTaskService;
 import com.example.roadmap.service.RoadMapAnalyticsTaskService;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
@@ -33,17 +35,56 @@ class AsyncTaskControllerTest {
   @MockitoBean
   private RoadMapAnalyticsTaskService roadMapAnalyticsTaskService;
 
+  @MockitoBean
+  private RoadMapItemBulkAsyncTaskService roadMapItemBulkAsyncTaskService;
+
   @Test
   void startShouldReturnAcceptedTaskSubmission() throws Exception {
     when(roadMapAnalyticsTaskService.submitRoadMapReport(2L))
         .thenReturn(new AsyncTaskSubmissionDto(
             TASK_ID,
+            AsyncTaskType.ROADMAP_ANALYTICS_REPORT,
             AsyncTaskStatus.PENDING,
             "/api/async-tasks/" + TASK_ID));
 
     mockMvc.perform(post("/api/async-tasks/roadmaps/2/analytics-report"))
         .andExpect(status().isAccepted())
         .andExpect(jsonPath("$.taskId").value(TASK_ID))
+        .andExpect(jsonPath("$.taskType").value("ROADMAP_ANALYTICS_REPORT"))
+        .andExpect(jsonPath("$.status").value("PENDING"))
+        .andExpect(jsonPath("$.statusEndpoint").value("/api/async-tasks/" + TASK_ID));
+  }
+
+  @Test
+  void startBulkShouldReturnAcceptedTaskSubmission() throws Exception {
+    when(roadMapItemBulkAsyncTaskService.submitBulkCreate(org.mockito.ArgumentMatchers.eq(32L), org.mockito.ArgumentMatchers.anyList()))
+        .thenReturn(new AsyncTaskSubmissionDto(
+            TASK_ID,
+            AsyncTaskType.ROADMAP_ITEM_BULK_CREATE,
+            AsyncTaskStatus.PENDING,
+            "/api/async-tasks/" + TASK_ID));
+
+    mockMvc.perform(post("/api/async-tasks/roadmaps/32/bulk-roadmap-items")
+            .contentType("application/json")
+            .content("""
+                [
+                  {
+                    "title": "Async bulk item",
+                    "details": "Created from async bulk task",
+                    "status": "PLANNED",
+                    "tagIds": []
+                  },
+                  {
+                    "title": "Async bulk item",
+                    "details": "Same title is allowed",
+                    "status": "IN_PROGRESS",
+                    "tagIds": []
+                  }
+                ]
+                """))
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.taskId").value(TASK_ID))
+        .andExpect(jsonPath("$.taskType").value("ROADMAP_ITEM_BULK_CREATE"))
         .andExpect(jsonPath("$.status").value("PENDING"))
         .andExpect(jsonPath("$.statusEndpoint").value("/api/async-tasks/" + TASK_ID));
   }
@@ -53,17 +94,20 @@ class AsyncTaskControllerTest {
     when(roadMapAnalyticsTaskService.getTaskStatus(TASK_ID))
         .thenReturn(new AsyncTaskStatusDto(
             TASK_ID,
+            AsyncTaskType.ROADMAP_ANALYTICS_REPORT,
             2L,
             AsyncTaskStatus.COMPLETED,
             OffsetDateTime.parse("2026-04-07T12:00:00+03:00"),
             OffsetDateTime.parse("2026-04-07T12:00:01+03:00"),
             OffsetDateTime.parse("2026-04-07T12:00:02+03:00"),
             null,
+            null,
             null));
 
     mockMvc.perform(get("/api/async-tasks/" + TASK_ID))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.taskId").value(TASK_ID))
+        .andExpect(jsonPath("$.taskType").value("ROADMAP_ANALYTICS_REPORT"))
         .andExpect(jsonPath("$.roadMapId").value(2))
         .andExpect(jsonPath("$.status").value("COMPLETED"));
   }

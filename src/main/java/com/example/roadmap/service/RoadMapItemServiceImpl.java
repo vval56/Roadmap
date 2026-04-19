@@ -295,7 +295,8 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
     try {
       for (RoadMapItemBulkCreateDto dto : dtos) {
         RoadMapItem entity = toBulkEntity(dto, roadMap);
-        saved.add(RoadMapItemMapper.toDto(roadMapItemRepository.save(entity)));
+        RoadMapItem persisted = roadMapItemRepository.save(entity);
+        saved.add(toBulkSequentialDto(persisted, roadMapId, dto));
         hasChanges = true;
       }
       return saved;
@@ -308,5 +309,18 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
 
   private void invalidateSearchIndex() {
     searchIndexService.invalidateAll();
+  }
+
+  private RoadMapItemDto toBulkSequentialDto(RoadMapItem persisted, Long roadMapId,
+                                             RoadMapItemBulkCreateDto sourceDto) {
+    RoadMapItemDto dto = new RoadMapItemDto();
+    dto.setId(persisted.getId());
+    dto.setTitle(persisted.getTitle());
+    dto.setDetails(persisted.getDetails());
+    dto.setStatus(persisted.getStatus());
+    dto.setRoadMapId(roadMapId);
+    dto.setParentItemId(sourceDto.getParentItemId());
+    dto.setTagIds(new LinkedHashSet<>(Optional.ofNullable(sourceDto.getTagIds()).orElse(Set.of())));
+    return dto;
   }
 }

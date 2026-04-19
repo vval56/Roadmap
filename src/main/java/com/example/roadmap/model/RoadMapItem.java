@@ -1,7 +1,7 @@
 package com.example.roadmap.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -62,7 +62,7 @@ public class RoadMapItem {
       orphanRemoval = true, fetch = FetchType.LAZY)
   private Set<Comment> comments = new LinkedHashSet<>();
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(name = "roadmap_item_tag",
       joinColumns = @JoinColumn(name = "roadmap_item_id"),
       inverseJoinColumns = @JoinColumn(name = "tag_id"))

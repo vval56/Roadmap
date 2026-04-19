@@ -5,7 +5,13 @@ postman/
 logs/
 .DS_Store
 .mvn/wrapper/maven-wrapper.jar
-jmeter/
+jmeter/*
+!jmeter/README.md
+!jmeter/*.jmx
+!jmeter/results/
+jmeter/results/*
+!jmeter/results/README.md
+!jmeter/results/.gitkeep
 jmeter.log
 
 ### STS ###

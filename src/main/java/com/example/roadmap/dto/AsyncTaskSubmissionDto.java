@@ -12,6 +12,9 @@ public class AsyncTaskSubmissionDto {
   @Schema(description = "Async task identifier", example = "91e0c13b-81d3-43a0-b687-dc25c6cb9497")
   private final String taskId;
 
+  @Schema(description = "Type of async task", example = "ROADMAP_ITEM_BULK_CREATE")
+  private final AsyncTaskType taskType;
+
   @Schema(description = "Initial task status", example = "PENDING")
   private final AsyncTaskStatus status;
 

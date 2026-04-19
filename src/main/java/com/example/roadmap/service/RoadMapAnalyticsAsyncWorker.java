@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,13 +22,16 @@ public class RoadMapAnalyticsAsyncWorker {
   private final RoadMapRepository roadMapRepository;
   private final AsyncTaskRegistryService asyncTaskRegistryService;
 
+  @Value("${app.async.analytics-delay-ms:5000}")
+  private long analyticsDelayMs;
+
   @Async("roadMapAsyncExecutor")
   @Transactional(readOnly = true)
   public CompletableFuture<Void> generateReportAsync(String taskId, Long roadMapId) {
     asyncTaskRegistryService.markRunning(taskId);
 
     try {
-      TimeUnit.MILLISECONDS.sleep(400);
+      waitForDemonstrationDelay();
 
       RoadMap roadMap = roadMapRepository.findDetailedById(roadMapId)
           .orElseThrow(() -> new ResourceNotFoundException("RoadMap with id=" + roadMapId + " not found"));
@@ -41,6 +45,16 @@ public class RoadMapAnalyticsAsyncWorker {
     }
 
     return CompletableFuture.completedFuture(null);
+  }
+
+  private void waitForDemonstrationDelay() throws InterruptedException {
+    if (analyticsDelayMs <= 0) {
+      if (Thread.currentThread().isInterrupted()) {
+        throw new InterruptedException();
+      }
+      return;
+    }
+    TimeUnit.MILLISECONDS.sleep(analyticsDelayMs);
   }
 
   private RoadMapAnalyticsReportDto buildReport(RoadMap roadMap) {
