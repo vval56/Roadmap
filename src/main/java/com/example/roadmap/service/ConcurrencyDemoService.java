@@ -95,12 +95,7 @@ public class ConcurrencyDemoService {
     private int value;
 
     private void increment() {
-      int snapshot = value;
-      for (int index = 0; index < 8; index++) {
-        Thread.onSpinWait();
-      }
-      Thread.yield();
-      value = snapshot + 1;
+      value++;
     }
 
     private int getValue() {

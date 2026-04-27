@@ -4,6 +4,7 @@ import com.example.roadmap.dto.AsyncTaskCountersDto;
 import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
 import com.example.roadmap.dto.AsyncTaskSubmissionDto;
+import com.example.roadmap.exception.ApiErrorResponse;
 import com.example.roadmap.service.RoadMapItemBulkAsyncTaskService;
 import com.example.roadmap.service.RoadMapAnalyticsTaskService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -97,6 +98,39 @@ public class AsyncTaskController {
       }
       """;
 
+  private static final String ANALYTICS_FAILED_STATUS_EXAMPLE = """
+      {
+        "taskId": "568c9d13-5b48-45bf-802a-6bea35ccc3fd",
+        "taskType": "ROADMAP_ANALYTICS_REPORT",
+        "roadMapId": 999,
+        "status": "FAILED",
+        "createdAt": "2026-04-27T13:44:54.515141+03:00",
+        "startedAt": "2026-04-27T13:44:54.558286+03:00",
+        "completedAt": "2026-04-27T13:45:09.632638+03:00",
+        "errorMessage": "RoadMap with id=999 not found"
+      }
+      """;
+
+  private static final String TASK_NOT_FOUND_ERROR_EXAMPLE = """
+      {
+        "timestamp": "2026-04-27T13:50:00+03:00",
+        "status": 404,
+        "error": "Not Found",
+        "message": "Async task with id=91e0c13b-81d3-43a0-b687-dc25c6cb9497 not found",
+        "path": "/api/async-tasks/91e0c13b-81d3-43a0-b687-dc25c6cb9497"
+      }
+      """;
+
+  private static final String ROADMAP_NOT_FOUND_ERROR_EXAMPLE = """
+      {
+        "timestamp": "2026-04-27T13:50:00+03:00",
+        "status": 404,
+        "error": "Not Found",
+        "message": "RoadMap with id=1 not found",
+        "path": "/api/async-tasks/roadmaps/1/analytics-report"
+      }
+      """;
+
   private static final String BULK_REQUEST_EXAMPLE = """
       [
         {
@@ -130,7 +164,9 @@ public class AsyncTaskController {
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(summary = "Start async roadmap analytics report generation",
       description = "Creates a background task that calculates analytics for one roadmap and returns task id immediately. "
-          + "If roadmap does not exist, task will move to FAILED status and the error can be observed through polling.")
+          + "Use an existing roadmap id from GET /api/roadmaps. "
+          + "HTTP 202 means task was accepted, not completed yet. "
+          + "If roadmap does not exist, API returns 404 and task is not created.")
   @ApiResponse(responseCode = "202", description = "Async task accepted for background execution",
       content = @Content(
           mediaType = "application/json",
@@ -139,8 +175,16 @@ public class AsyncTaskController {
               name = "AsyncTaskAccepted",
               value = SUBMISSION_RESPONSE_EXAMPLE)))
   @ApiResponse(responseCode = "400", description = "Invalid roadmap id", content = @Content)
+  @ApiResponse(responseCode = "404", description = "Roadmap id not found",
+      content = @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = ApiErrorResponse.class),
+          examples = @ExampleObject(
+              name = "RoadMapNotFound",
+              value = ROADMAP_NOT_FOUND_ERROR_EXAMPLE)))
   public AsyncTaskSubmissionDto startRoadMapAnalyticsReport(
-      @Parameter(description = "Roadmap id for which analytics report should be generated", example = "2")
+      @Parameter(description = "Existing roadmap id for which analytics report should be generated. "
+          + "Take it from GET /api/roadmaps response.", example = "2")
       @PathVariable @Positive Long roadMapId) {
     return roadMapAnalyticsTaskService.submitRoadMapReport(roadMapId);
   }
@@ -149,6 +193,7 @@ public class AsyncTaskController {
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(summary = "Start async roadmap item bulk creation",
       description = "Creates roadmap items in background for one roadmap and returns task id immediately. "
+          + "Use an existing roadmap id from GET /api/roadmaps. "
           + "Duplicate titles are allowed because RoadMapItem has no unique constraint on title.")
   @ApiResponse(responseCode = "202", description = "Async bulk create task accepted",
       content = @Content(
@@ -158,6 +203,13 @@ public class AsyncTaskController {
               name = "AsyncBulkTaskAccepted",
               value = BULK_SUBMISSION_RESPONSE_EXAMPLE)))
   @ApiResponse(responseCode = "400", description = "Invalid roadmap id or invalid bulk payload", content = @Content)
+  @ApiResponse(responseCode = "404", description = "Roadmap id not found",
+      content = @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = ApiErrorResponse.class),
+          examples = @ExampleObject(
+              name = "RoadMapNotFound",
+              value = ROADMAP_NOT_FOUND_ERROR_EXAMPLE)))
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       description = "Bulk array of roadmap items. Duplicate titles are allowed.",
@@ -168,14 +220,17 @@ public class AsyncTaskController {
               name = "AsyncBulkRoadMapItems",
               value = BULK_REQUEST_EXAMPLE)))
   public AsyncTaskSubmissionDto startAsyncRoadMapItemBulkCreate(
-      @Parameter(description = "Roadmap id that will own all created items", example = "32")
+      @Parameter(description = "Existing roadmap id that will own all created items. "
+          + "Take it from GET /api/roadmaps response.", example = "32")
       @PathVariable @Positive Long roadMapId,
       @Valid @RequestBody @NotEmpty List<@Valid RoadMapItemBulkCreateDto> dtos) {
     return roadMapItemBulkAsyncTaskService.submitBulkCreate(roadMapId, dtos);
   }
 
   @GetMapping("/{taskId}")
-  @Operation(summary = "Get async task status")
+  @Operation(summary = "Get async task status",
+      description = "Use taskId returned by async submission endpoints. "
+          + "Task ids are stored in-memory and become unavailable after application restart.")
   @ApiResponse(responseCode = "200", description = "Current task status returned",
       content = @Content(
           mediaType = "application/json",
@@ -186,11 +241,21 @@ public class AsyncTaskController {
                   value = COMPLETED_STATUS_EXAMPLE),
               @ExampleObject(
                   name = "BulkCompletedStatus",
-                  value = BULK_COMPLETED_STATUS_EXAMPLE)
+                  value = BULK_COMPLETED_STATUS_EXAMPLE),
+              @ExampleObject(
+                  name = "AnalyticsFailedBecauseRoadmapMissing",
+                  value = ANALYTICS_FAILED_STATUS_EXAMPLE)
           }))
-  @ApiResponse(responseCode = "404", description = "Task id not found", content = @Content)
+  @ApiResponse(responseCode = "404", description = "Task id not found",
+      content = @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = ApiErrorResponse.class),
+          examples = @ExampleObject(
+              name = "TaskNotFound",
+              value = TASK_NOT_FOUND_ERROR_EXAMPLE)))
   public AsyncTaskStatusDto getTaskStatus(
-      @Parameter(description = "Async task id", example = "91e0c13b-81d3-43a0-b687-dc25c6cb9497")
+      @Parameter(description = "Async task id returned by POST /api/async-tasks/... endpoints",
+          example = "91e0c13b-81d3-43a0-b687-dc25c6cb9497")
       @PathVariable String taskId) {
     return roadMapAnalyticsTaskService.getTaskStatus(taskId);
   }
