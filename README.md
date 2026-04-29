@@ -140,6 +140,27 @@ pgAdmin:
 ./mvnw -q -DskipTests compile
 ```
 
+## React SPA клиент
+В проект добавлен SPA-клиент на React (`frontend/`) c:
+- CRUD для `RoadMap`, `RoadMapItem`, `Tag`
+- фильтрацией списков roadmap/items
+- отображением связей:
+  - `OneToMany`: `RoadMap -> RoadMapItem`
+  - `ManyToMany`: `RoadMapItem <-> Tag`
+
+Запуск:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+По умолчанию API: `http://localhost:8080/api`  
+Настройка через `.env`:
+```bash
+cp frontend/.env.example frontend/.env
+```
+
 ## Ключевые endpoint'ы
 
 CRUD:

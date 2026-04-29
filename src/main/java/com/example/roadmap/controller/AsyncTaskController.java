@@ -164,7 +164,7 @@ public class AsyncTaskController {
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(summary = "Start async roadmap analytics report generation",
       description = "Creates a background task that calculates analytics for one roadmap and returns task id immediately. "
-          + "Use an existing roadmap id from GET /api/roadmaps. "
+          + "Use an existing roadmap id from GET /api/roadmaps/catalog or GET /api/roadmaps. "
           + "HTTP 202 means task was accepted, not completed yet. "
           + "If roadmap does not exist, API returns 404 and task is not created.")
   @ApiResponse(responseCode = "202", description = "Async task accepted for background execution",
@@ -184,7 +184,7 @@ public class AsyncTaskController {
               value = ROADMAP_NOT_FOUND_ERROR_EXAMPLE)))
   public AsyncTaskSubmissionDto startRoadMapAnalyticsReport(
       @Parameter(description = "Existing roadmap id for which analytics report should be generated. "
-          + "Take it from GET /api/roadmaps response.", example = "2")
+          + "Take it from GET /api/roadmaps/catalog response.", example = "2")
       @PathVariable @Positive Long roadMapId) {
     return roadMapAnalyticsTaskService.submitRoadMapReport(roadMapId);
   }
@@ -193,7 +193,7 @@ public class AsyncTaskController {
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(summary = "Start async roadmap item bulk creation",
       description = "Creates roadmap items in background for one roadmap and returns task id immediately. "
-          + "Use an existing roadmap id from GET /api/roadmaps. "
+          + "Use an existing roadmap id from GET /api/roadmaps/catalog or GET /api/roadmaps. "
           + "Duplicate titles are allowed because RoadMapItem has no unique constraint on title.")
   @ApiResponse(responseCode = "202", description = "Async bulk create task accepted",
       content = @Content(
@@ -221,7 +221,7 @@ public class AsyncTaskController {
               value = BULK_REQUEST_EXAMPLE)))
   public AsyncTaskSubmissionDto startAsyncRoadMapItemBulkCreate(
       @Parameter(description = "Existing roadmap id that will own all created items. "
-          + "Take it from GET /api/roadmaps response.", example = "32")
+          + "Take it from GET /api/roadmaps/catalog response.", example = "32")
       @PathVariable @Positive Long roadMapId,
       @Valid @RequestBody @NotEmpty List<@Valid RoadMapItemBulkCreateDto> dtos) {
     return roadMapItemBulkAsyncTaskService.submitBulkCreate(roadMapId, dtos);

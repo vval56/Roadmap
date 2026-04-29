@@ -20,6 +20,8 @@ public interface RoadMapItemService {
 
   RoadMapItemDto getById(Long id);
 
+  List<RoadMapItemDto> getByRoadMapId(Long roadMapId);
+
   List<RoadMapItemDto> getAll();
 
   Page<RoadMapItemDto> getPage(Pageable pageable);

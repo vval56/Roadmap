@@ -10,6 +10,8 @@ public interface RoadMapRepository extends JpaRepository<RoadMap, Long> {
 
   List<RoadMap> findByTitle(String title);
 
+  List<RoadMap> findByTitleStartingWithIgnoreCaseOrderByTitleAsc(String prefix);
+
   @EntityGraph(attributePaths = {"owner", "items", "items.tags", "items.comments"})
   Optional<RoadMap> findDetailedById(Long id);
 }

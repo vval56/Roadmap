@@ -86,6 +86,13 @@ public class RoadMapItemServiceImpl implements RoadMapItemService {
   }
 
   @Override
+  public List<RoadMapItemDto> getByRoadMapId(Long roadMapId) {
+    return roadMapItemRepository.findByRoadMapIdOrderByIdAsc(roadMapId).stream()
+        .map(RoadMapItemMapper::toDto)
+        .toList();
+  }
+
+  @Override
   public List<RoadMapItemDto> getAll() {
     return roadMapItemRepository.findAll().stream()
         .map(RoadMapItemMapper::toDto)

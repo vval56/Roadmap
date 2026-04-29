@@ -48,6 +48,21 @@ public class RoadMapServiceImpl implements RoadMapService {
   }
 
   @Override
+  public List<RoadMapDto> getCatalog(String titlePrefix) {
+    String normalizedPrefix = titlePrefix == null ? "" : titlePrefix.trim();
+    if (normalizedPrefix.isEmpty()) {
+      return getAll();
+    }
+
+    List<RoadMapDto> result = new ArrayList<>();
+    for (RoadMap roadMap : roadMapRepository
+        .findByTitleStartingWithIgnoreCaseOrderByTitleAsc(normalizedPrefix)) {
+      result.add(RoadMapMapper.toDto(roadMap));
+    }
+    return result;
+  }
+
+  @Override
   public List<RoadMapDto> getAll() {
     List<RoadMapDto> result = new ArrayList<>();
     for (RoadMap roadMap : roadMapRepository.findAll()) {

@@ -3,6 +3,7 @@ package com.example.roadmap.repository;
 import com.example.roadmap.model.ItemStatus;
 import com.example.roadmap.model.RoadMapItem;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -11,6 +12,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface RoadMapItemRepository extends JpaRepository<RoadMapItem, Long> {
+  Optional<RoadMapItem> findByRoadMapIdAndTitle(Long roadMapId, String title);
+
+  List<RoadMapItem> findByRoadMapIdOrderByIdAsc(Long roadMapId);
+
   @EntityGraph(attributePaths = "tags")
   @Query("select i from RoadMapItem i")
   List<RoadMapItem> findAllWithTagsEntityGraph();

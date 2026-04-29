@@ -139,6 +139,14 @@ public class RoadMapItemController {
     return roadMapItemService.getAll();
   }
 
+  @GetMapping(params = "roadMapId")
+  @Operation(summary = "Get roadmap items by roadmap id")
+  public List<RoadMapItemDto> getByRoadMapId(
+      @Parameter(description = "Roadmap id for filtering items", example = "2")
+      @RequestParam @Positive Long roadMapId) {
+    return roadMapItemService.getByRoadMapId(roadMapId);
+  }
+
   @GetMapping("/page")
   @Operation(summary = "Get roadmap items page")
   public PageResponseDto<RoadMapItemDto> getPage(

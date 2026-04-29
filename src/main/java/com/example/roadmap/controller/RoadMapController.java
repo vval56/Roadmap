@@ -40,7 +40,7 @@ public class RoadMapController {
     return roadMapService.create(dto);
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/{id:\\d+}")
   @Operation(summary = "Get roadmap by id")
   public RoadMapDto getById(@Parameter(description = "Roadmap id", example = "1")
                             @PathVariable @Positive Long id) {
@@ -58,6 +58,16 @@ public class RoadMapController {
   @Operation(summary = "Get all roadmaps")
   public List<RoadMapDto> getAll() {
     return roadMapService.getAll();
+  }
+
+  @GetMapping("/catalog")
+  @Operation(summary = "Get catalog roadmaps",
+      description = "Returns roadmap directions for demo catalog. "
+          + "By default returns roadmaps with title prefix 'Roadmap:'.")
+  public List<RoadMapDto> getCatalog(
+      @Parameter(description = "Title prefix filter for catalog", example = "Roadmap:")
+      @RequestParam(defaultValue = "Roadmap:") String prefix) {
+    return roadMapService.getCatalog(prefix);
   }
 
   @PutMapping("/{id}")
