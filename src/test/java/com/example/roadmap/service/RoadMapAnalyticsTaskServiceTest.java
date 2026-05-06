@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.example.roadmap.dto.AsyncTaskCountersDto;
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
+import com.example.roadmap.repository.RoadMapRepository;
 import java.time.OffsetDateTime;
 import java.util.concurrent.CompletableFuture;
 import com.example.roadmap.dto.AsyncTaskType;
@@ -27,11 +28,15 @@ class RoadMapAnalyticsTaskServiceTest {
   @Mock
   private RoadMapAnalyticsAsyncWorker roadMapAnalyticsAsyncWorker;
 
+  @Mock
+  private RoadMapRepository roadMapRepository;
+
   @InjectMocks
   private RoadMapAnalyticsTaskService roadMapAnalyticsTaskService;
 
   @Test
   void submitRoadMapReportShouldRegisterTaskAndStartAsyncWorker() {
+    when(roadMapRepository.existsById(2L)).thenReturn(true);
     when(asyncTaskRegistryService.registerRoadMapReportTask(2L)).thenReturn(TASK_ID);
     when(roadMapAnalyticsAsyncWorker.generateReportAsync(TASK_ID, 2L))
         .thenReturn(CompletableFuture.completedFuture(null));

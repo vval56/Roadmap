@@ -1,0 +1,76 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
+
+      - name: Run build and tests
+        run: ./mvnw -B clean verify
+
+      - name: Build Docker image
+        run: docker build -t roadmap-app:ci .
+
+  deploy:
+    name: Deploy and Healthcheck
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+
+    steps:
+      - name: Trigger Render deploy hook
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: curl --fail --show-error --silent -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+      - name: Skip deploy (secret is missing)
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL == '' }}
+        run: echo "RENDER_DEPLOY_HOOK_URL is not set. Deploy step skipped."
+
+      - name: Wait for deployment and run healthcheck
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' && secrets.PROD_HEALTHCHECK_URL != '' }}
+        env:
+          HEALTHCHECK_URL: ${{ secrets.PROD_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          ATTEMPTS=30
+          SLEEP_SECONDS=10
+          for i in $(seq 1 "$ATTEMPTS"); do
+            CODE="$(curl -s -o /tmp/health.json -w "%{http_code}" "$HEALTHCHECK_URL" || true)"
+            if [ "$CODE" = "200" ] && grep -Eq '"status"[[:space:]]*:[[:space:]]*"UP"' /tmp/health.json; then
+              echo "Healthcheck passed on attempt $i"
+              cat /tmp/health.json
+              exit 0
+            fi
+            echo "Attempt $i/$ATTEMPTS: health is not UP yet (http=$CODE). Waiting..."
+            sleep "$SLEEP_SECONDS"
+          done
+          echo "Healthcheck failed after $ATTEMPTS attempts."
+          cat /tmp/health.json || true
+          exit 1
+
+      - name: Skip healthcheck (secret is missing)
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' && secrets.PROD_HEALTHCHECK_URL == '' }}
+        run: echo "PROD_HEALTHCHECK_URL is not set. Healthcheck step skipped."

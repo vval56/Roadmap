@@ -8,6 +8,7 @@ import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskType;
 import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
 import com.example.roadmap.model.ItemStatus;
+import com.example.roadmap.repository.RoadMapRepository;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -28,12 +29,16 @@ class RoadMapItemBulkAsyncTaskServiceTest {
   @Mock
   private RoadMapItemBulkAsyncWorker roadMapItemBulkAsyncWorker;
 
+  @Mock
+  private RoadMapRepository roadMapRepository;
+
   @InjectMocks
   private RoadMapItemBulkAsyncTaskService roadMapItemBulkAsyncTaskService;
 
   @Test
   void submitBulkCreateShouldRegisterTaskAndStartAsyncWorker() {
     List<RoadMapItemBulkCreateDto> dtos = List.of(bulkItem("Bulk async item", ItemStatus.PLANNED));
+    when(roadMapRepository.existsById(32L)).thenReturn(true);
     when(asyncTaskRegistryService.registerRoadMapItemBulkTask(32L)).thenReturn(TASK_ID);
     when(roadMapItemBulkAsyncWorker.createBulkAsync(TASK_ID, 32L, dtos))
         .thenReturn(CompletableFuture.completedFuture(null));

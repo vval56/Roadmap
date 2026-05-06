@@ -3,38 +3,44 @@ services:
     image: postgres:16-alpine
     container_name: roadmap_postgres
     restart: unless-stopped
-    command:
-      - postgres
-      - -c
-      - shared_preload_libraries=pg_stat_statements
-      - -c
-      - pg_stat_statements.track=all
     environment:
-      POSTGRES_DB: roadmap_db
-      POSTGRES_USER: roadmap_user
-      POSTGRES_PASSWORD: roadmap_pass
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - roadmap_pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U roadmap_user -d roadmap_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  pgadmin:
-    image: dpage/pgadmin4:8.14
-    container_name: roadmap_pgadmin
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: roadmap_app
     restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@roadmap.local
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
     depends_on:
       postgres:
         condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      PORT: ${APP_PORT:-8080}
+      JAVA_OPTS: ${JAVA_OPTS:-}
+    ports:
+      - "${APP_PORT:-8080}:${APP_PORT:-8080}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${APP_PORT:-8080}/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
 volumes:
   roadmap_pg_data:

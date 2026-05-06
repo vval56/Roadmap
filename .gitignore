@@ -45,3 +45,7 @@ build/
 # Frontend (React SPA)
 frontend/node_modules/
 frontend/dist/
+
+# Environment files
+.env
+frontend/.env

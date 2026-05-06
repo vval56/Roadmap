@@ -117,7 +117,8 @@ RoadMap2026/
 
 ## Запуск инфраструктуры
 ```bash
-docker compose up -d
+cp .env.example .env
+docker compose up -d --build
 ```
 
 PostgreSQL:
@@ -127,8 +128,9 @@ PostgreSQL:
 - user: `roadmap_user`
 - password: `roadmap_pass`
 
-pgAdmin:
-- `http://localhost:5050`
+Приложение:
+- `http://localhost:8080`
+- healthcheck: `http://localhost:8080/actuator/health`
 
 ## Запуск приложения
 ```bash
@@ -139,6 +141,32 @@ pgAdmin:
 ```bash
 ./mvnw -q -DskipTests compile
 ```
+
+## Docker
+В проект добавлен multi-stage `Dockerfile`:
+- stage build: Maven + JDK 21 (`clean package`)
+- stage runtime: JRE 21 (Alpine), запуск `app.jar`
+
+Собрать и запустить контейнер вручную:
+```bash
+docker build -t roadmap-app:local .
+docker run --rm -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5433/roadmap_db \
+  -e SPRING_DATASOURCE_USERNAME=roadmap_user \
+  -e SPRING_DATASOURCE_PASSWORD=roadmap_pass \
+  roadmap-app:local
+```
+
+## Переменные окружения
+Основные переменные:
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `SPRING_JPA_HIBERNATE_DDL_AUTO`
+- `PORT`
+- `JAVA_OPTS`
+
+Шаблон расположен в `.env.example`.
 
 ## React SPA клиент
 В проект добавлен SPA-клиент на React (`frontend/`) c:
@@ -160,6 +188,27 @@ npm run dev
 ```bash
 cp frontend/.env.example frontend/.env
 ```
+
+## PaaS (бесплатный) и CI/CD
+Подготовлен workflow: `.github/workflows/ci-cd.yml`.
+
+Что делает pipeline:
+1. `build` и `test`: `./mvnw clean verify`
+2. `docker build`: проверка, что Docker-образ собирается
+3. `deploy`: вызов deploy hook (Render)
+4. `healthcheck`: проверка `.../actuator/health` после деплоя
+
+### Вариант размещения: Render (Free)
+1. Создай Web Service в Render из этого репозитория, runtime `Docker`.
+2. В Render добавь env:
+   - `SPRING_DATASOURCE_URL`
+   - `SPRING_DATASOURCE_USERNAME`
+   - `SPRING_DATASOURCE_PASSWORD`
+   - `SPRING_JPA_HIBERNATE_DDL_AUTO=update`
+3. Укажи health check path: `/actuator/health`.
+4. В GitHub repo settings -> Secrets and variables -> Actions добавь:
+   - `RENDER_DEPLOY_HOOK_URL` (секрет, deploy hook из Render)
+   - `PROD_HEALTHCHECK_URL` (секрет, полный URL health endpoint в проде)
 
 ## Ключевые endpoint'ы
 
