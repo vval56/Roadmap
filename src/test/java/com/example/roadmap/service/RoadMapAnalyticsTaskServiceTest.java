@@ -1,12 +1,15 @@
 package com.example.roadmap.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.roadmap.dto.AsyncTaskCountersDto;
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskStatusDto;
+import com.example.roadmap.exception.ResourceNotFoundException;
 import com.example.roadmap.repository.RoadMapRepository;
 import java.time.OffsetDateTime;
 import java.util.concurrent.CompletableFuture;
@@ -91,5 +94,16 @@ class RoadMapAnalyticsTaskServiceTest {
     assertEquals(expected.getRunningTasks(), actual.getRunningTasks());
     assertEquals(expected.getCompletedTasks(), actual.getCompletedTasks());
     assertEquals(expected.getFailedTasks(), actual.getFailedTasks());
+  }
+
+  @Test
+  void submitRoadMapReportShouldFailWhenRoadMapDoesNotExist() {
+    when(roadMapRepository.existsById(404L)).thenReturn(false);
+
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        () -> roadMapAnalyticsTaskService.submitRoadMapReport(404L));
+
+    assertEquals("RoadMap with id=404 not found", exception.getMessage());
+    verifyNoInteractions(asyncTaskRegistryService, roadMapAnalyticsAsyncWorker);
   }
 }

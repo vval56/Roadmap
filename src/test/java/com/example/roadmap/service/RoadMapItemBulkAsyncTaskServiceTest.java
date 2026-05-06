@@ -1,12 +1,15 @@
 package com.example.roadmap.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.roadmap.dto.AsyncTaskStatus;
 import com.example.roadmap.dto.AsyncTaskType;
 import com.example.roadmap.dto.RoadMapItemBulkCreateDto;
+import com.example.roadmap.exception.ResourceNotFoundException;
 import com.example.roadmap.model.ItemStatus;
 import com.example.roadmap.repository.RoadMapRepository;
 import java.util.List;
@@ -51,6 +54,18 @@ class RoadMapItemBulkAsyncTaskServiceTest {
     assertEquals("/api/async-tasks/" + TASK_ID, response.getStatusEndpoint());
     verify(asyncTaskRegistryService).registerRoadMapItemBulkTask(32L);
     verify(roadMapItemBulkAsyncWorker).createBulkAsync(TASK_ID, 32L, dtos);
+  }
+
+  @Test
+  void submitBulkCreateShouldFailWhenRoadMapDoesNotExist() {
+    List<RoadMapItemBulkCreateDto> dtos = List.of(bulkItem("Missing roadmap", ItemStatus.PLANNED));
+    when(roadMapRepository.existsById(404L)).thenReturn(false);
+
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        () -> roadMapItemBulkAsyncTaskService.submitBulkCreate(404L, dtos));
+
+    assertEquals("RoadMap with id=404 not found", exception.getMessage());
+    verifyNoInteractions(asyncTaskRegistryService, roadMapItemBulkAsyncWorker);
   }
 
   private RoadMapItemBulkCreateDto bulkItem(String title, ItemStatus status) {

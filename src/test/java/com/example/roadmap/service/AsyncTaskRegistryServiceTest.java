@@ -186,4 +186,60 @@ class AsyncTaskRegistryServiceTest {
     assertEquals(1L, counters.getCompletedTasks());
     assertEquals(0L, counters.getFailedTasks());
   }
+
+  @Test
+  void shouldCompleteBulkTaskWithoutRunningState() {
+    String taskId = asyncTaskRegistryService.registerRoadMapItemBulkTask(55L);
+
+    AsyncRoadMapItemBulkResultDto bulkResult = new AsyncRoadMapItemBulkResultDto();
+    bulkResult.setRoadMapId(55L);
+    bulkResult.setCreatedItemsCount(1);
+    bulkResult.setCreatedItemIds(java.util.List.of(501L));
+
+    asyncTaskRegistryService.completeBulk(taskId, bulkResult);
+
+    AsyncTaskStatusDto status = asyncTaskRegistryService.getStatus(taskId);
+    AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
+    assertEquals(AsyncTaskStatus.COMPLETED, status.getStatus());
+    assertNotNull(status.getStartedAt());
+    assertNotNull(status.getCompletedAt());
+    assertEquals(0L, counters.getRunningTasks());
+    assertEquals(1L, counters.getCompletedTasks());
+  }
+
+  @Test
+  void shouldNotDoubleCountWhenBulkTaskIsCompletedTwice() {
+    String taskId = asyncTaskRegistryService.registerRoadMapItemBulkTask(66L);
+    AsyncRoadMapItemBulkResultDto bulkResult = new AsyncRoadMapItemBulkResultDto();
+    bulkResult.setRoadMapId(66L);
+    bulkResult.setCreatedItemsCount(1);
+    bulkResult.setCreatedItemIds(java.util.List.of(601L));
+
+    asyncTaskRegistryService.markRunning(taskId);
+    asyncTaskRegistryService.completeBulk(taskId, bulkResult);
+    asyncTaskRegistryService.completeBulk(taskId, bulkResult);
+    asyncTaskRegistryService.fail(taskId, "ignored");
+
+    AsyncTaskStatusDto status = asyncTaskRegistryService.getStatus(taskId);
+    AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
+    assertEquals(AsyncTaskStatus.COMPLETED, status.getStatus());
+    assertEquals(1L, counters.getCompletedTasks());
+    assertEquals(0L, counters.getFailedTasks());
+    assertEquals(0L, counters.getRunningTasks());
+  }
+
+  @Test
+  void shouldThrowWhenUnknownTaskIsUpdated() {
+    ResourceNotFoundException runningEx = assertThrows(ResourceNotFoundException.class,
+        () -> asyncTaskRegistryService.markRunning("unknown-running-task"));
+    assertEquals("Async task with id=unknown-running-task not found", runningEx.getMessage());
+
+    ResourceNotFoundException completeEx = assertThrows(ResourceNotFoundException.class,
+        () -> asyncTaskRegistryService.complete("unknown-complete-task", new RoadMapAnalyticsReportDto()));
+    assertEquals("Async task with id=unknown-complete-task not found", completeEx.getMessage());
+
+    ResourceNotFoundException failEx = assertThrows(ResourceNotFoundException.class,
+        () -> asyncTaskRegistryService.fail("unknown-fail-task", "boom"));
+    assertEquals("Async task with id=unknown-fail-task not found", failEx.getMessage());
+  }
 }

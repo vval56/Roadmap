@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class RoadMapItemBulkAsyncWorkerTest {
@@ -77,6 +78,40 @@ class RoadMapItemBulkAsyncWorkerTest {
 
     verify(asyncTaskRegistryService).markRunning("bulk-task-3");
     verify(asyncTaskRegistryService).fail("bulk-task-3", "Async roadmap item bulk creation was interrupted");
+  }
+
+  @Test
+  void shouldCreateBulkItemsAndCompleteTaskWhenDelayIsPositive() {
+    ReflectionTestUtils.setField(roadMapItemBulkAsyncWorker, "bulkCreateDelayMs", 1L);
+    List<RoadMapItemBulkCreateDto> dtos = List.of(bulkItem("Delayed item", ItemStatus.PLANNED));
+    when(roadMapItemService.createBulk(32L, dtos)).thenReturn(List.of(savedItem(201L)));
+
+    roadMapItemBulkAsyncWorker.createBulkAsync("bulk-task-4", 32L, dtos).join();
+
+    verify(asyncTaskRegistryService).markRunning("bulk-task-4");
+    verify(asyncTaskRegistryService).completeBulk(eq("bulk-task-4"), org.mockito.ArgumentMatchers.any());
+  }
+
+  @Test
+  void shouldFailTaskWithGenericMessageWhenExceptionMessageIsBlank() {
+    List<RoadMapItemBulkCreateDto> dtos = List.of(bulkItem("Broken bulk item", ItemStatus.PLANNED));
+    when(roadMapItemService.createBulk(77L, dtos)).thenThrow(new IllegalStateException("   "));
+
+    roadMapItemBulkAsyncWorker.createBulkAsync("bulk-task-5", 77L, dtos).join();
+
+    verify(asyncTaskRegistryService).markRunning("bulk-task-5");
+    verify(asyncTaskRegistryService).fail("bulk-task-5", "Async roadmap item bulk creation failed");
+  }
+
+  @Test
+  void shouldFailTaskWithGenericMessageWhenExceptionMessageIsNull() {
+    List<RoadMapItemBulkCreateDto> dtos = List.of(bulkItem("Broken bulk item", ItemStatus.PLANNED));
+    when(roadMapItemService.createBulk(78L, dtos)).thenThrow(new IllegalStateException());
+
+    roadMapItemBulkAsyncWorker.createBulkAsync("bulk-task-6", 78L, dtos).join();
+
+    verify(asyncTaskRegistryService).markRunning("bulk-task-6");
+    verify(asyncTaskRegistryService).fail("bulk-task-6", "Async roadmap item bulk creation failed");
   }
 
   private RoadMapItemBulkCreateDto bulkItem(String title, ItemStatus status) {

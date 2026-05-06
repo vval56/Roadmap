@@ -21,6 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class RoadMapAnalyticsAsyncWorkerTest {
@@ -123,6 +124,18 @@ class RoadMapAnalyticsAsyncWorkerTest {
     assertEquals(0, report.getTotalComments());
     assertEquals(0.0, report.getCompletionRatePercent());
     assertEquals(java.util.List.of(), report.getDistinctTagNames());
+  }
+
+  @Test
+  void shouldGenerateReportWhenDelayIsPositive() {
+    ReflectionTestUtils.setField(roadMapAnalyticsAsyncWorker, "analyticsDelayMs", 1L);
+    RoadMap roadMap = roadMap();
+    when(roadMapRepository.findDetailedById(12L)).thenReturn(Optional.of(roadMap));
+
+    roadMapAnalyticsAsyncWorker.generateReportAsync("report-1007", 12L).join();
+
+    verify(asyncTaskRegistryService).markRunning("report-1007");
+    verify(asyncTaskRegistryService).complete(eq("report-1007"), org.mockito.ArgumentMatchers.any());
   }
 
   private RoadMap roadMap() {
