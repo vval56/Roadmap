@@ -210,6 +210,37 @@ cp frontend/.env.example frontend/.env
    - `RENDER_DEPLOY_HOOK_URL` (секрет, deploy hook из Render)
    - `PROD_HEALTHCHECK_URL` (секрет, полный URL health endpoint в проде)
 
+## Railway (отдельно backend + frontend + database)
+Если деплой выполняется в Railway, поднимай 3 отдельных сервиса в одном Project:
+1. `Postgres` (Railway database)
+2. `backend` (корень репозитория, `Dockerfile`)
+3. `frontend` (папка `frontend/`, `frontend/Dockerfile`)
+
+### Backend variables (Railway)
+Добавь в `backend` service -> `Variables`:
+```env
+SPRING_DATASOURCE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+SPRING_DATASOURCE_USERNAME=${{Postgres.PGUSER}}
+SPRING_DATASOURCE_PASSWORD=${{Postgres.PGPASSWORD}}
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+```
+
+Healthcheck path для backend:
+```text
+/actuator/health
+```
+
+### Frontend variables (Railway)
+Добавь в `frontend` service -> `Variables`:
+```env
+VITE_API_BASE_URL=https://<BACKEND_PUBLIC_DOMAIN>/api
+```
+После изменения переменных выполни `Redeploy` frontend.
+
+### Почему healthcheck падал
+Ошибка `Connection to localhost:5433 refused` означает, что backend не получил переменные БД и пытался подключиться к локальному PostgreSQL внутри контейнера.
+В этой версии проекта fallback обновлен так, чтобы автоматически использовать `PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD`, если они присутствуют в окружении.
+
 ## Ключевые endpoint'ы
 
 CRUD:
