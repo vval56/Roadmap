@@ -153,7 +153,6 @@ jobs:
       RAILWAY_ENVIRONMENT_ID_VAR: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
       RAILWAY_BACKEND_SERVICE: ${{ vars.RAILWAY_BACKEND_SERVICE }}
       RAILWAY_FRONTEND_SERVICE: ${{ vars.RAILWAY_FRONTEND_SERVICE }}
-      APP_HEALTHCHECK_URL: ${{ vars.APP_HEALTHCHECK_URL }}
 
     steps:
       - name: Checkout repository
@@ -171,7 +170,6 @@ jobs:
           if [ -z "${RAILWAY_PROJECT_ID:-}" ]; then echo "Missing secret RAILWAY_PROJECT_ID"; exit 1; fi
           if [ -z "${RAILWAY_BACKEND_SERVICE:-}" ]; then echo "Missing variable RAILWAY_BACKEND_SERVICE"; exit 1; fi
           if [ -z "${RAILWAY_FRONTEND_SERVICE:-}" ]; then echo "Missing variable RAILWAY_FRONTEND_SERVICE"; exit 1; fi
-          if [ -z "${APP_HEALTHCHECK_URL:-}" ]; then echo "Missing variable APP_HEALTHCHECK_URL"; exit 1; fi
           RAILWAY_ENV_SELECTED="${RAILWAY_ENVIRONMENT_ID:-${RAILWAY_ENVIRONMENT_ID_VAR:-production}}"
           echo "RAILWAY_ENV_SELECTED=${RAILWAY_ENV_SELECTED}" >> "$GITHUB_ENV"
           echo "Using Railway environment: ${RAILWAY_ENV_SELECTED}"
@@ -194,6 +192,20 @@ jobs:
             --project "${RAILWAY_PROJECT_ID}" \
             --environment "${RAILWAY_ENV_SELECTED}" \
             --service "${RAILWAY_FRONTEND_SERVICE}"
+
+  healthcheck:
+    name: healthcheck
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    env:
+      APP_HEALTHCHECK_URL: ${{ vars.APP_HEALTHCHECK_URL }}
+
+    steps:
+      - name: Validate healthcheck URL
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_HEALTHCHECK_URL:-}" ]; then echo "Missing variable APP_HEALTHCHECK_URL"; exit 1; fi
 
       - name: Wait for deployment and run healthcheck
         run: |
