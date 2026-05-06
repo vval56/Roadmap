@@ -5,12 +5,10 @@ WORKDIR /app
 COPY pom.xml mvnw mvnw.cmd ./
 COPY .mvn .mvn
 RUN chmod +x mvnw
-RUN --mount=type=cache,id=s/roadmap-api-root-m2,target=/root/.m2 \
-    ./mvnw -q -DskipTests dependency:go-offline
+RUN ./mvnw -q -DskipTests dependency:go-offline
 
 COPY src src
-RUN --mount=type=cache,id=s/roadmap-api-root-m2,target=/root/.m2 \
-    ./mvnw -q -DskipTests package
+RUN ./mvnw -q -DskipTests package
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
