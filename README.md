@@ -189,26 +189,25 @@ npm run dev
 cp frontend/.env.example frontend/.env
 ```
 
-## PaaS (бесплатный) и CI/CD
+## PaaS (Railway) и CI/CD
 Подготовлен workflow: `.github/workflows/ci-cd.yml`.
 
-Что делает pipeline:
-1. `build` и `test`: `./mvnw clean verify`
-2. `docker build`: проверка, что Docker-образ собирается
-3. `deploy`: вызов deploy hook (Render)
-4. `healthcheck`: проверка `.../actuator/health` после деплоя
+Pipeline:
+1. `build` + `test`: `./mvnw clean verify`
+2. Проверка сборки backend/frontend docker-образов
+3. Deploy backend и frontend в Railway через CLI
+4. Проверка `APP_HEALTHCHECK_URL` (`/actuator/health`)
 
-### Вариант размещения: Render (Free)
-1. Создай Web Service в Render из этого репозитория, runtime `Docker`.
-2. В Render добавь env:
-   - `SPRING_DATASOURCE_URL`
-   - `SPRING_DATASOURCE_USERNAME`
-   - `SPRING_DATASOURCE_PASSWORD`
-   - `SPRING_JPA_HIBERNATE_DDL_AUTO=update`
-3. Укажи health check path: `/actuator/health`.
-4. В GitHub repo settings -> Secrets and variables -> Actions добавь:
-   - `RENDER_DEPLOY_HOOK_URL` (секрет, deploy hook из Render)
-   - `PROD_HEALTHCHECK_URL` (секрет, полный URL health endpoint в проде)
+### Что нужно настроить в GitHub Actions
+Secrets:
+- `RAILWAY_TOKEN`
+- `RAILWAY_PROJECT_ID`
+- `RAILWAY_ENVIRONMENT_ID`
+
+Repository Variables:
+- `RAILWAY_BACKEND_SERVICE` (например `roadmap-api`)
+- `RAILWAY_FRONTEND_SERVICE` (например `roadmap-web`)
+- `APP_HEALTHCHECK_URL` (например `https://<backend-domain>/actuator/health`)
 
 ## Railway (отдельно backend + frontend + database)
 Если деплой выполняется в Railway, поднимай 3 отдельных сервиса в одном Project:
@@ -219,9 +218,9 @@ cp frontend/.env.example frontend/.env
 ### Backend variables (Railway)
 Добавь в `backend` service -> `Variables`:
 ```env
-SPRING_DATASOURCE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
-SPRING_DATASOURCE_USERNAME=${{Postgres.PGUSER}}
-SPRING_DATASOURCE_PASSWORD=${{Postgres.PGPASSWORD}}
+DB_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+DB_USERNAME=${{Postgres.PGUSER}}
+DB_PASSWORD=${{Postgres.PGPASSWORD}}
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 ```
 

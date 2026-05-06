@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI/CD Railway
 
 on:
   push:
@@ -31,46 +31,78 @@ jobs:
       - name: Run build and tests
         run: ./mvnw -B clean verify
 
-      - name: Build Docker image
-        run: docker build -t roadmap-app:ci .
+      - name: Build backend Docker image
+        run: docker build -t roadmap-backend:ci .
+
+      - name: Build frontend Docker image
+        run: docker build -f frontend/Dockerfile -t roadmap-frontend:ci frontend
 
   deploy:
-    name: Deploy and Healthcheck
+    name: Deploy to Railway + Healthcheck
     runs-on: ubuntu-latest
     needs: build-test
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE: ${{ vars.RAILWAY_BACKEND_SERVICE }}
+      RAILWAY_FRONTEND_SERVICE: ${{ vars.RAILWAY_FRONTEND_SERVICE }}
+      APP_HEALTHCHECK_URL: ${{ vars.APP_HEALTHCHECK_URL }}
 
     steps:
-      - name: Trigger Render deploy hook
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
-        run: curl --fail --show-error --silent -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Skip deploy (secret is missing)
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL == '' }}
-        run: echo "RENDER_DEPLOY_HOOK_URL is not set. Deploy step skipped."
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-      - name: Wait for deployment and run healthcheck
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' && secrets.PROD_HEALTHCHECK_URL != '' }}
-        env:
-          HEALTHCHECK_URL: ${{ secrets.PROD_HEALTHCHECK_URL }}
+      - name: Validate CI/CD variables
         run: |
           set -euo pipefail
-          ATTEMPTS=30
+          if [ -z "${RAILWAY_TOKEN:-}" ]; then echo "Missing secret RAILWAY_TOKEN"; exit 1; fi
+          if [ -z "${RAILWAY_PROJECT_ID:-}" ]; then echo "Missing secret RAILWAY_PROJECT_ID"; exit 1; fi
+          if [ -z "${RAILWAY_ENVIRONMENT_ID:-}" ]; then echo "Missing secret RAILWAY_ENVIRONMENT_ID"; exit 1; fi
+          if [ -z "${RAILWAY_BACKEND_SERVICE:-}" ]; then echo "Missing variable RAILWAY_BACKEND_SERVICE"; exit 1; fi
+          if [ -z "${RAILWAY_FRONTEND_SERVICE:-}" ]; then echo "Missing variable RAILWAY_FRONTEND_SERVICE"; exit 1; fi
+          if [ -z "${APP_HEALTHCHECK_URL:-}" ]; then echo "Missing variable APP_HEALTHCHECK_URL"; exit 1; fi
+
+      - name: Deploy backend service
+        run: |
+          npx -y @railway/cli up . \
+            --ci \
+            --detach \
+            --project "${RAILWAY_PROJECT_ID}" \
+            --environment "${RAILWAY_ENVIRONMENT_ID}" \
+            --service "${RAILWAY_BACKEND_SERVICE}"
+
+      - name: Deploy frontend service
+        run: |
+          npx -y @railway/cli up frontend \
+            --ci \
+            --detach \
+            --path-as-root \
+            --project "${RAILWAY_PROJECT_ID}" \
+            --environment "${RAILWAY_ENVIRONMENT_ID}" \
+            --service "${RAILWAY_FRONTEND_SERVICE}"
+
+      - name: Wait for deployment and run healthcheck
+        run: |
+          set -euo pipefail
+          ATTEMPTS=40
           SLEEP_SECONDS=10
           for i in $(seq 1 "$ATTEMPTS"); do
-            CODE="$(curl -s -o /tmp/health.json -w "%{http_code}" "$HEALTHCHECK_URL" || true)"
+            CODE="$(curl -s -o /tmp/health.json -w "%{http_code}" "${APP_HEALTHCHECK_URL}" || true)"
             if [ "$CODE" = "200" ] && grep -Eq '"status"[[:space:]]*:[[:space:]]*"UP"' /tmp/health.json; then
               echo "Healthcheck passed on attempt $i"
               cat /tmp/health.json
               exit 0
             fi
-            echo "Attempt $i/$ATTEMPTS: health is not UP yet (http=$CODE). Waiting..."
+            echo "Attempt $i/$ATTEMPTS: health not ready (http=$CODE). Waiting..."
             sleep "$SLEEP_SECONDS"
           done
           echo "Healthcheck failed after $ATTEMPTS attempts."
           cat /tmp/health.json || true
           exit 1
-
-      - name: Skip healthcheck (secret is missing)
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' && secrets.PROD_HEALTHCHECK_URL == '' }}
-        run: echo "PROD_HEALTHCHECK_URL is not set. Healthcheck step skipped."
