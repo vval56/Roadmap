@@ -229,6 +229,31 @@ class AsyncTaskRegistryServiceTest {
   }
 
   @Test
+  void shouldNotChangeCountersWhenFailedBulkTaskIsCompletedAgain() {
+    String taskId = asyncTaskRegistryService.registerRoadMapItemBulkTask(77L);
+    AsyncRoadMapItemBulkResultDto bulkResult = new AsyncRoadMapItemBulkResultDto();
+    bulkResult.setRoadMapId(77L);
+    bulkResult.setCreatedItemsCount(1);
+    bulkResult.setCreatedItemIds(java.util.List.of(701L));
+
+    asyncTaskRegistryService.markRunning(taskId);
+    asyncTaskRegistryService.fail(taskId, "Bulk failed");
+    asyncTaskRegistryService.completeBulk(taskId, bulkResult);
+    asyncTaskRegistryService.fail(taskId, "Ignored failure");
+
+    AsyncTaskStatusDto status = asyncTaskRegistryService.getStatus(taskId);
+    AsyncTaskCountersDto counters = asyncTaskRegistryService.getCounters();
+    assertEquals(AsyncTaskStatus.FAILED, status.getStatus());
+    assertEquals("Bulk failed", status.getErrorMessage());
+    assertNull(status.getReport());
+    assertNull(status.getBulkResult());
+    assertEquals(1L, counters.getSubmittedTasks());
+    assertEquals(0L, counters.getRunningTasks());
+    assertEquals(0L, counters.getCompletedTasks());
+    assertEquals(1L, counters.getFailedTasks());
+  }
+
+  @Test
   void shouldThrowWhenUnknownTaskIsUpdated() {
     ResourceNotFoundException runningEx = assertThrows(ResourceNotFoundException.class,
         () -> asyncTaskRegistryService.markRunning("unknown-running-task"));
