@@ -46,6 +46,7 @@ jobs:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
       RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_ENVIRONMENT_ID_VAR: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
       RAILWAY_BACKEND_SERVICE: ${{ vars.RAILWAY_BACKEND_SERVICE }}
       RAILWAY_FRONTEND_SERVICE: ${{ vars.RAILWAY_FRONTEND_SERVICE }}
       APP_HEALTHCHECK_URL: ${{ vars.APP_HEALTHCHECK_URL }}
@@ -64,10 +65,12 @@ jobs:
           set -euo pipefail
           if [ -z "${RAILWAY_TOKEN:-}" ]; then echo "Missing secret RAILWAY_TOKEN"; exit 1; fi
           if [ -z "${RAILWAY_PROJECT_ID:-}" ]; then echo "Missing secret RAILWAY_PROJECT_ID"; exit 1; fi
-          if [ -z "${RAILWAY_ENVIRONMENT_ID:-}" ]; then echo "Missing secret RAILWAY_ENVIRONMENT_ID"; exit 1; fi
           if [ -z "${RAILWAY_BACKEND_SERVICE:-}" ]; then echo "Missing variable RAILWAY_BACKEND_SERVICE"; exit 1; fi
           if [ -z "${RAILWAY_FRONTEND_SERVICE:-}" ]; then echo "Missing variable RAILWAY_FRONTEND_SERVICE"; exit 1; fi
           if [ -z "${APP_HEALTHCHECK_URL:-}" ]; then echo "Missing variable APP_HEALTHCHECK_URL"; exit 1; fi
+          RAILWAY_ENV_SELECTED="${RAILWAY_ENVIRONMENT_ID:-${RAILWAY_ENVIRONMENT_ID_VAR:-production}}"
+          echo "RAILWAY_ENV_SELECTED=${RAILWAY_ENV_SELECTED}" >> "$GITHUB_ENV"
+          echo "Using Railway environment: ${RAILWAY_ENV_SELECTED}"
 
       - name: Deploy backend service
         run: |
@@ -75,7 +78,7 @@ jobs:
             --ci \
             --detach \
             --project "${RAILWAY_PROJECT_ID}" \
-            --environment "${RAILWAY_ENVIRONMENT_ID}" \
+            --environment "${RAILWAY_ENV_SELECTED}" \
             --service "${RAILWAY_BACKEND_SERVICE}"
 
       - name: Deploy frontend service
@@ -85,7 +88,7 @@ jobs:
             --detach \
             --path-as-root \
             --project "${RAILWAY_PROJECT_ID}" \
-            --environment "${RAILWAY_ENVIRONMENT_ID}" \
+            --environment "${RAILWAY_ENV_SELECTED}" \
             --service "${RAILWAY_FRONTEND_SERVICE}"
 
       - name: Wait for deployment and run healthcheck
