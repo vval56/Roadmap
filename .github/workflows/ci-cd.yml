@@ -74,7 +74,7 @@ jobs:
 
       - name: Deploy backend service
         run: |
-          npx -y @railway/cli up . \
+          npx -y @railway/cli up \
             --ci \
             --detach \
             --project "${RAILWAY_PROJECT_ID}" \
