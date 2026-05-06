@@ -73,7 +73,7 @@ jobs:
 
       - name: Build frontend
         run: |
-          npm ci --prefix frontend
+          npm ci --ignore-scripts --prefix frontend
           npm run build --prefix frontend
 
   docker-build:
