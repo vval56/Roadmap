@@ -144,7 +144,7 @@ PostgreSQL:
 
 ## Docker
 В проект добавлен multi-stage `Dockerfile`:
-- stage build: Maven + JDK 21 (`clean package`)
+- stage build: Maven + JDK 21 (`dependency:go-offline` + `package`, с кешем Maven)
 - stage runtime: JRE 21 (Alpine), запуск `app.jar`
 
 Собрать и запустить контейнер вручную:
@@ -159,6 +159,10 @@ docker run --rm -p 8080:8080 \
 
 ## Переменные окружения
 Основные переменные:
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_PORT`
 - `SPRING_DATASOURCE_URL`
 - `SPRING_DATASOURCE_USERNAME`
 - `SPRING_DATASOURCE_PASSWORD`
@@ -224,6 +228,14 @@ DB_PASSWORD=${{Postgres.PGPASSWORD}}
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 ```
 
+Альтернатива (эквивалентно):
+```env
+SPRING_DATASOURCE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+SPRING_DATASOURCE_USERNAME=${{Postgres.PGUSER}}
+SPRING_DATASOURCE_PASSWORD=${{Postgres.PGPASSWORD}}
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+```
+
 Healthcheck path для backend:
 ```text
 /actuator/health
@@ -239,6 +251,15 @@ VITE_API_BASE_URL=https://<BACKEND_PUBLIC_DOMAIN>/api
 ### Почему healthcheck падал
 Ошибка `Connection to localhost:5433 refused` означает, что backend не получил переменные БД и пытался подключиться к локальному PostgreSQL внутри контейнера.
 В этой версии проекта fallback обновлен так, чтобы автоматически использовать `PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD`, если они присутствуют в окружении.
+
+### Если ошибка `password authentication failed`
+1. Локально: удалить старый volume и поднять заново:
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+2. Railway: убедиться, что в backend нет старых фиксированных пар `roadmap_user/roadmap_pass`, а используются reference-переменные `${{Postgres.*}}`.
+3. После изменения переменных в Railway обязательно нажать `Deploy` (стейджинг переменных без deploy не применяется).
 
 ## Ключевые endpoint'ы
 
