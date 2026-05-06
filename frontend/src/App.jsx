@@ -6,7 +6,30 @@ const CATALOG_PREFIX = 'Roadmap: ';
 const ADMIN_EMAILS = new Set(['vladislav@example.com']);
 
 const DEMO_USERS = [
-  { id: 1, firstName: 'Demo', lastName: 'Viewer', email: 'demo.viewer@roadmap.local' }
+  {
+    id: 1,
+    firstName: 'Vladislav',
+    lastName: 'Mogilny',
+    email: 'vladislav@example.com',
+    login: 'admin',
+    password: 'admin123'
+  },
+  {
+    id: 2,
+    firstName: 'Regular',
+    lastName: 'User',
+    email: 'user@example.com',
+    login: 'user',
+    password: 'user123'
+  },
+  {
+    id: 3,
+    firstName: 'Demo',
+    lastName: 'Viewer',
+    email: 'demo.viewer@roadmap.local',
+    login: 'demo',
+    password: 'demo123'
+  }
 ];
 
 const DEMO_TAG_NAMES = [
@@ -478,6 +501,15 @@ function formatStatus(status) {
   }
 }
 
+function isGeneratedTagName(tagName) {
+  if (!tagName) {
+    return false;
+  }
+  const normalized = tagName.trim();
+  return /^tag-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalized)
+    || /^tag[0-9a-z]{20,}$/i.test(normalized);
+}
+
 function statusClass(status) {
   switch (status) {
     case 'DONE':
@@ -569,20 +601,20 @@ function buildVerticalGraph(items) {
   }
 
   const compactMode = typeof window !== 'undefined' && window.innerWidth <= 720;
-  const nodeWidth = compactMode ? 190 : 230;
-  const nodeHeight = compactMode ? 78 : 84;
-  const gapX = compactMode ? 22 : 44;
-  const gapY = compactMode ? 64 : 90;
-  const paddingX = compactMode ? 16 : 30;
-  const paddingY = compactMode ? 20 : 26;
+  const nodeWidth = compactMode ? 188 : 220;
+  const nodeHeight = compactMode ? 56 : 62;
+  const gapX = compactMode ? 12 : 20;
+  const gapY = compactMode ? 14 : 20;
+  const paddingX = compactMode ? 12 : 18;
+  const paddingY = compactMode ? 10 : 14;
 
   const maxColumns = Math.max(...orderedDepths.map((depth) => levels.get(depth).length));
   const width = Math.max(
-    compactMode ? 340 : 760,
+    compactMode ? 320 : 650,
     paddingX * 2 + maxColumns * nodeWidth + Math.max(maxColumns - 1, 0) * gapX
   );
   const height = Math.max(
-    compactMode ? 280 : 360,
+    compactMode ? 180 : 240,
     paddingY * 2 + orderedDepths.length * nodeHeight + Math.max(orderedDepths.length - 1, 0) * gapY
   );
 
@@ -620,7 +652,7 @@ function buildVerticalGraph(items) {
     const tx = to.x + to.width / 2;
     const ty = to.y;
 
-    const controlY = sy + (ty - sy) * 0.48;
+    const controlY = sy + (ty - sy) * 0.34;
 
     edges.push({
       id: `${item.parentItemId}-${item.id}`,
@@ -647,8 +679,15 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState('viewer');
   const [showLoginPanel, setShowLoginPanel] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
   const [currentUser, setCurrentUser] = useState(null);
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginValue, setLoginValue] = useState('');
+  const [passwordValue, setPasswordValue] = useState('');
+  const [registerFirstName, setRegisterFirstName] = useState('');
+  const [registerLastName, setRegisterLastName] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerLogin, setRegisterLogin] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
   const [authInfo, setAuthInfo] = useState('');
   const [dataSource, setDataSource] = useState('api');
 
@@ -686,6 +725,12 @@ export default function App() {
     }
     return map;
   }, [tags]);
+
+  const visibleTags = useMemo(() => (
+    tags
+      .filter((tag) => tag?.id && tag?.name && !isGeneratedTagName(tag.name))
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+  ), [tags]);
 
   const selectedRoadmap = useMemo(
     () => roadmaps.find((roadmap) => roadmap.id === selectedRoadmapId) || null,
@@ -732,6 +777,16 @@ export default function App() {
     setToast({ type, message });
   }
 
+  function resetAuthFormValues() {
+    setLoginValue('');
+    setPasswordValue('');
+    setRegisterFirstName('');
+    setRegisterLastName('');
+    setRegisterEmail('');
+    setRegisterLogin('');
+    setRegisterPassword('');
+  }
+
   function ensureCatalogTitle(title) {
     const normalized = (title || '').trim();
     if (!normalized) {
@@ -761,6 +816,30 @@ export default function App() {
     return filtered.sort((a, b) => a.id - b.id);
   }
 
+  async function ensureTagNamesLoadedForItems(items) {
+    if (dataSource !== 'api' || !Array.isArray(items) || items.length === 0) {
+      return;
+    }
+
+    const knownTagIds = new Set(tags.map((tag) => Number(tag.id)));
+    const hasMissingTagNames = items.some((item) =>
+      (item.tagIds || []).some((tagId) => !knownTagIds.has(Number(tagId)))
+    );
+
+    if (!hasMissingTagNames) {
+      return;
+    }
+
+    try {
+      const tagsData = await api.get('/tags');
+      if (Array.isArray(tagsData)) {
+        setTags(tagsData);
+      }
+    } catch (_ignored) {
+      // Keep existing tag map when tag refresh is unavailable.
+    }
+  }
+
   function applySnapshot(snapshot, preferredRoadmapId = null) {
     setDataSource(snapshot.source);
     setUsers(snapshot.users);
@@ -783,24 +862,6 @@ export default function App() {
     setStatusDraft('PLANNED');
   }
 
-  function loadFallbackCatalog(preferredRoadmapId = null) {
-    const demoItems = DEMO_ITEMS.map(normalizeItem);
-    applySnapshot(
-      {
-        source: 'demo',
-        users: DEMO_USERS,
-        tags: DEMO_TAGS,
-        roadmaps: DEMO_ROADMAPS,
-        items: demoItems
-      },
-      preferredRoadmapId
-    );
-
-    if (!loginEmail) {
-      setLoginEmail(DEMO_USERS[0].email);
-    }
-  }
-
   async function bootstrap(preferredRoadmapId = null) {
     setLoadingApp(true);
     clearMessages();
@@ -811,11 +872,6 @@ export default function App() {
         ? roadmapsData.filter((roadmap) => roadmap?.id)
         : [];
 
-      if (normalizedRoadmaps.length === 0) {
-        loadFallbackCatalog(preferredRoadmapId);
-        return;
-      }
-
       const [usersData, tagsData] = await Promise.all([
         api.get('/users').catch(() => []),
         api.get('/tags').catch(() => [])
@@ -825,18 +881,24 @@ export default function App() {
         {
           source: 'api',
           users: usersData,
-          tags: tagsData.length > 0 ? tagsData : DEMO_TAGS,
+          tags: tagsData,
           roadmaps: normalizedRoadmaps,
           items: []
         },
         preferredRoadmapId
       );
 
-      if (!loginEmail && usersData.length > 0) {
-        setLoginEmail(usersData[0].email);
-      }
     } catch (loadError) {
-      loadFallbackCatalog(preferredRoadmapId);
+      setDataSource('api');
+      setUsers([]);
+      setTags([]);
+      setRoadmaps([]);
+      setAllItems([]);
+      setSelectedRoadmapId(null);
+      setRoadmapItems([]);
+      setSelectedItemId(null);
+      setStatusDraft('PLANNED');
+      showError(`API unavailable: ${loadError.message || 'Unable to connect to backend'}`);
     } finally {
       setLoadingApp(false);
     }
@@ -861,6 +923,13 @@ export default function App() {
     const timerId = window.setTimeout(() => setToast(null), 2200);
     return () => window.clearTimeout(timerId);
   }, [toast]);
+
+  useEffect(() => {
+    if (!selectedItem || dataSource !== 'api') {
+      return;
+    }
+    ensureTagNamesLoadedForItems([selectedItem]);
+  }, [selectedItem, dataSource]);
 
   useEffect(() => {
     if (!adminStepParentId) {
@@ -960,6 +1029,7 @@ export default function App() {
         setAllItems(items);
       }
       setRoadmapItems(items);
+      await ensureTagNamesLoadedForItems(items);
       clearMessages();
     } catch (loadError) {
       if (requestId !== roadmapLoadSeqRef.current) {
@@ -980,41 +1050,137 @@ export default function App() {
       setCurrentUser(null);
       setShowLoginPanel(false);
       setActivePage('viewer');
+      setAuthMode('login');
+      resetAuthFormValues();
       setAuthInfo('');
       showToast('info', 'Signed out');
       return;
     }
     setAuthInfo('');
+    setAuthMode('login');
+    resetAuthFormValues();
     setShowLoginPanel((prev) => !prev);
   }
 
-  function handleLoginSubmit(event) {
+  async function handleLoginSubmit(event) {
     event.preventDefault();
 
-    const email = loginEmail.trim();
-    if (!email) {
-      showError('Enter email');
+    const login = loginValue.trim();
+    const password = passwordValue.trim();
+    if (!login) {
+      showError('Enter login');
+      return;
+    }
+    if (!password) {
+      showError('Enter password');
       return;
     }
 
-    if (dataSource === 'api') {
-      const user = users.find((entry) => (entry.email || '').toLowerCase() === email.toLowerCase());
+    setBusy(true);
+    clearMessages();
+
+    try {
+      const response = await api.post('/auth/login', { login, password });
+      const user = response?.user;
       if (!user) {
         showError('User not found');
         return;
       }
       setCurrentUser(user);
-    } else {
-      setCurrentUser({ id: DEMO_USERS[0].id, email, firstName: 'Demo', lastName: 'User' });
+
+      setPasswordValue('');
+      setAuthInfo('Signed in');
+      showToast('success', 'Signed in');
+      window.setTimeout(() => {
+        setShowLoginPanel(false);
+        setAuthMode('login');
+        setAuthInfo('');
+      }, 900);
+      setError('');
+    } catch (loginError) {
+      showError(loginError.message || 'Invalid login or password');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRegisterSubmit(event) {
+    event.preventDefault();
+
+    const firstName = registerFirstName.trim();
+    const lastName = registerLastName.trim();
+    const email = registerEmail.trim().toLowerCase();
+    const login = registerLogin.trim();
+    const password = registerPassword.trim();
+
+    if (!firstName) {
+      showError('Enter first name');
+      return;
+    }
+    if (!lastName) {
+      showError('Enter last name');
+      return;
+    }
+    if (!email) {
+      showError('Enter email');
+      return;
+    }
+    if (!login) {
+      showError('Enter login');
+      return;
+    }
+    if (!password) {
+      showError('Enter password');
+      return;
     }
 
-    setAuthInfo('Signed in');
-    showToast('success', 'Signed in');
-    window.setTimeout(() => {
-      setShowLoginPanel(false);
-      setAuthInfo('');
-    }, 900);
-    setError('');
+    setBusy(true);
+    clearMessages();
+
+    try {
+      const response = await api.post('/auth/register', {
+        firstName,
+        lastName,
+        email,
+        login,
+        password
+      });
+      const createdUser = response?.user || null;
+
+      if (!createdUser) {
+        showError('Registration failed');
+        return;
+      }
+
+      setCurrentUser({
+        id: createdUser.id,
+        email: createdUser.email,
+        login: createdUser.login,
+        firstName: createdUser.firstName,
+        lastName: createdUser.lastName
+      });
+      setUsers((prevUsers) => {
+        const exists = prevUsers.some((entry) => entry.id === createdUser.id);
+        if (exists) {
+          return prevUsers;
+        }
+        return [...prevUsers, createdUser];
+      });
+      setLoginValue(createdUser.login || createdUser.email || '');
+      setAuthInfo('Registered and signed in');
+      showToast('success', 'Registered');
+      window.setTimeout(() => {
+        setShowLoginPanel(false);
+        setAuthMode('login');
+        setAuthInfo('');
+      }, 900);
+      setError('');
+      resetAuthFormValues();
+    } catch (registerError) {
+      showError(registerError.message || 'Registration failed');
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleAdminCreateRoadmap(event) {
@@ -1253,6 +1419,7 @@ export default function App() {
         const itemsPool = await refreshAllItemsFromApi(selectedRoadmapId);
         setAllItems(itemsPool);
         setRoadmapItems(itemsPool);
+        await ensureTagNamesLoadedForItems(itemsPool);
       } else {
         const updatedItems = allItems.map((item) =>
           item.id === adminEditableStep.id
@@ -1304,6 +1471,7 @@ export default function App() {
         const itemsPool = await refreshAllItemsFromApi(selectedRoadmapId);
         setAllItems(itemsPool);
         setRoadmapItems(itemsPool);
+        await ensureTagNamesLoadedForItems(itemsPool);
       } else {
         const updatedItems = allItems.filter((item) => item.id !== adminEditableStep.id);
         setAllItems(updatedItems);
@@ -1361,6 +1529,7 @@ export default function App() {
         const itemsPool = await refreshAllItemsFromApi(selectedRoadmapId);
         setAllItems(itemsPool);
         setRoadmapItems(itemsPool);
+        await ensureTagNamesLoadedForItems(itemsPool);
         setSelectedItemId(created.id);
       } else {
         const nextId = allItems.reduce((maxId, item) => Math.max(maxId, item.id || 0), 0) + 1;
@@ -1460,6 +1629,7 @@ export default function App() {
         const itemsPool = await refreshAllItemsFromApi(selectedRoadmapId);
         setAllItems(itemsPool);
         setRoadmapItems(itemsPool);
+        await ensureTagNamesLoadedForItems(itemsPool);
         if (lastCreatedId) {
           setSelectedItemId(lastCreatedId);
         }
@@ -1565,6 +1735,7 @@ export default function App() {
         const itemsPool = await refreshAllItemsFromApi(selectedRoadmapId);
         setAllItems(itemsPool);
         setRoadmapItems(itemsPool);
+        await ensureTagNamesLoadedForItems(itemsPool);
       } else {
         const updatedAllItems = allItems.map((item) =>
           item.id === selectedItem.id ? { ...item, status: statusDraft } : item
@@ -1631,33 +1802,143 @@ export default function App() {
 
       {showLoginPanel && !currentUser ? (
         <>
-          <div className="modal-backdrop" onClick={() => setShowLoginPanel(false)} />
+          <div
+            className="modal-backdrop"
+            onClick={() => {
+              setShowLoginPanel(false);
+              setAuthMode('login');
+              setAuthInfo('');
+              resetAuthFormValues();
+            }}
+          />
           <section className="login-modal">
-            <h3>Sign in</h3>
-            <form onSubmit={handleLoginSubmit}>
-              <label>
-                Email
-                <input
-                  list="known-users"
-                  value={loginEmail}
-                  onChange={(event) => setLoginEmail(event.target.value)}
-                  placeholder="user@example.com"
-                  required
-                />
-                <datalist id="known-users">
-                  {users.map((user) => (
-                    <option key={user.id} value={user.email} />
-                  ))}
-                </datalist>
-              </label>
-              <div className="modal-actions">
-                <button type="button" className="close-btn" onClick={() => setShowLoginPanel(false)}>
-                  Cancel
-                </button>
-                <button className="auth-btn" disabled={busy}>Sign in</button>
-              </div>
-              {authInfo ? <p className="auth-info">{authInfo}</p> : null}
-            </form>
+            <h3>{authMode === 'login' ? 'Sign in' : 'Register'}</h3>
+            <div className="auth-mode-switch">
+              <button
+                type="button"
+                className={`menu-btn ${authMode === 'login' ? 'active' : ''}`}
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthInfo('');
+                }}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                className={`menu-btn ${authMode === 'register' ? 'active' : ''}`}
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthInfo('');
+                }}
+              >
+                Register
+              </button>
+            </div>
+
+            {authMode === 'login' ? (
+              <form onSubmit={handleLoginSubmit}>
+                <label>
+                  Login
+                  <input
+                    value={loginValue}
+                    onChange={(event) => setLoginValue(event.target.value)}
+                    placeholder="admin"
+                    required
+                  />
+                </label>
+                <label>
+                  Password
+                  <input
+                    type="password"
+                    value={passwordValue}
+                    onChange={(event) => setPasswordValue(event.target.value)}
+                    placeholder="admin123"
+                    required
+                  />
+                </label>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="close-btn"
+                    onClick={() => {
+                      setShowLoginPanel(false);
+                      setAuthInfo('');
+                      resetAuthFormValues();
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button className="auth-btn" disabled={busy}>Sign in</button>
+                </div>
+                {authInfo ? <p className="auth-info">{authInfo}</p> : null}
+              </form>
+            ) : (
+              <form onSubmit={handleRegisterSubmit}>
+                <label>
+                  First name
+                  <input
+                    value={registerFirstName}
+                    onChange={(event) => setRegisterFirstName(event.target.value)}
+                    placeholder="John"
+                    required
+                  />
+                </label>
+                <label>
+                  Last name
+                  <input
+                    value={registerLastName}
+                    onChange={(event) => setRegisterLastName(event.target.value)}
+                    placeholder="Doe"
+                    required
+                  />
+                </label>
+                <label>
+                  Email
+                  <input
+                    type="email"
+                    value={registerEmail}
+                    onChange={(event) => setRegisterEmail(event.target.value)}
+                    placeholder="john.doe@example.com"
+                    required
+                  />
+                </label>
+                <label>
+                  Login
+                  <input
+                    value={registerLogin}
+                    onChange={(event) => setRegisterLogin(event.target.value)}
+                    placeholder="john"
+                    required
+                  />
+                </label>
+                <label>
+                  Password
+                  <input
+                    type="password"
+                    value={registerPassword}
+                    onChange={(event) => setRegisterPassword(event.target.value)}
+                    placeholder="john1234"
+                    required
+                  />
+                </label>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="close-btn"
+                    onClick={() => {
+                      setShowLoginPanel(false);
+                      setAuthInfo('');
+                      resetAuthFormValues();
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button className="auth-btn" disabled={busy}>Create account</button>
+                </div>
+                {authInfo ? <p className="auth-info">{authInfo}</p> : null}
+              </form>
+            )}
           </section>
         </>
       ) : null}
@@ -1815,10 +2096,10 @@ export default function App() {
                       multiple
                       value={adminStepTagIds.map(String)}
                       onChange={handleAdminTagSelect}
-                      size={Math.min(8, Math.max(4, tags.length))}
+                      size={Math.min(8, Math.max(4, visibleTags.length))}
                       disabled={!selectedRoadmap}
                     >
-                      {tags.map((tag) => (
+                      {visibleTags.map((tag) => (
                         <option key={tag.id} value={tag.id}>
                           {tag.name}
                         </option>
@@ -1904,10 +2185,10 @@ export default function App() {
                       multiple
                       value={adminEditStepTagIds.map(String)}
                       onChange={handleAdminEditStepTagSelect}
-                      size={Math.min(8, Math.max(4, tags.length))}
+                      size={Math.min(8, Math.max(4, visibleTags.length))}
                       disabled={!adminEditableStep}
                     >
-                      {tags.map((tag) => (
+                      {visibleTags.map((tag) => (
                         <option key={tag.id} value={tag.id}>
                           {tag.name}
                         </option>
@@ -1987,10 +2268,10 @@ export default function App() {
                       multiple
                       value={adminBulkTagIds.map(String)}
                       onChange={handleAdminBulkTagSelect}
-                      size={Math.min(8, Math.max(4, tags.length))}
+                      size={Math.min(8, Math.max(4, visibleTags.length))}
                       disabled={!selectedRoadmap}
                     >
-                      {tags.map((tag) => (
+                      {visibleTags.map((tag) => (
                         <option key={tag.id} value={tag.id}>
                           {tag.name}
                         </option>
@@ -2039,7 +2320,7 @@ export default function App() {
                 {selectedRoadmap ? <p>{selectedRoadmap.description || ''}</p> : null}
               </div>
 
-              <div className="graph-stage">
+              <div className={`graph-stage ${selectedRoadmap ? 'with-roadmap' : 'catalog-mode'}`}>
                 {loadingItems ? <div className="overlay">Loading...</div> : null}
 
                 {!selectedRoadmap ? (
@@ -2095,25 +2376,27 @@ export default function App() {
                   <p>{selectedItem.details || 'No details'}</p>
                 </div>
 
-                <section className="progress-editor">
-                  <h4>Progress status</h4>
-                  <label>
-                    Status
-                    <select
-                      value={statusDraft}
-                      onChange={(event) => handleStatusDraftChange(event.target.value)}
-                    >
-                      {getAllowedStatuses(selectedItem.status || 'PLANNED').map((status) => (
-                        <option key={status} value={status}>
-                          {formatStatus(status)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button className="auth-btn" onClick={saveStatusForSelectedItem} disabled={busy}>
-                    Save status
-                  </button>
-                </section>
+                {currentUser ? (
+                  <section className="progress-editor">
+                    <h4>Progress status</h4>
+                    <label>
+                      Status
+                      <select
+                        value={statusDraft}
+                        onChange={(event) => handleStatusDraftChange(event.target.value)}
+                      >
+                        {getAllowedStatuses(selectedItem.status || 'PLANNED').map((status) => (
+                          <option key={status} value={status}>
+                            {formatStatus(status)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button className="auth-btn" onClick={saveStatusForSelectedItem} disabled={busy}>
+                      Save status
+                    </button>
+                  </section>
+                ) : null}
 
                 <section className="links-preview">
                   <h4>Learning links</h4>
@@ -2127,17 +2410,23 @@ export default function App() {
                   </div>
                 </section>
 
-                <section className="tags-preview">
-                  <h4>Tags</h4>
-                  <div className="chip-list">
-                    {selectedItem.tagIds.map((tagId) => (
-                      <span key={tagId} className="chip">
-                        {tagsById.get(tagId)?.name || `tag#${tagId}`}
-                      </span>
-                    ))}
-                    {selectedItem.tagIds.length === 0 ? <span className="chip">No tags</span> : null}
-                  </div>
-                </section>
+            <section className="tags-preview">
+              <h4>Tags</h4>
+              <div className="chip-list">
+                {selectedItem.tagIds
+                  .map((tagId) => ({ tagId, tag: tagsById.get(tagId) }))
+                  .filter(({ tag }) => tag?.name && !isGeneratedTagName(tag.name))
+                  .map(({ tagId, tag }) => (
+                    <span key={tagId} className="chip">
+                      {tag.name}
+                    </span>
+                  ))}
+                {selectedItem.tagIds.every((tagId) => {
+                  const tag = tagsById.get(tagId);
+                  return !tag?.name || isGeneratedTagName(tag.name);
+                }) ? <span className="chip">No tags</span> : null}
+              </div>
+            </section>
               </aside>
             ) : null}
           </main>

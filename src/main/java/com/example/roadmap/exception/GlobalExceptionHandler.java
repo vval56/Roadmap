@@ -40,6 +40,12 @@ public class GlobalExceptionHandler {
     return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
   }
 
+  @ExceptionHandler(AuthenticationFailedException.class)
+  public ResponseEntity<ApiErrorResponse> handleAuthenticationFailed(
+      AuthenticationFailedException ex, HttpServletRequest request) {
+    return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI(), List.of());
+  }
+
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
       DataIntegrityViolationException ex, HttpServletRequest request) {

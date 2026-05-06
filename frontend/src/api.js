@@ -1,5 +1,12 @@
-const baseFromEnv = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-const API_BASE_URL = baseFromEnv.replace(/\/$/, '');
+const baseFromEnv = import.meta.env.VITE_API_BASE_URL || '/api';
+const resolvedBaseUrl = (
+  baseFromEnv.startsWith('/')
+  && typeof window !== 'undefined'
+  && window.location.protocol === 'file:'
+)
+  ? 'http://localhost:8080/api'
+  : baseFromEnv;
+const API_BASE_URL = resolvedBaseUrl.replace(/\/$/, '');
 
 class ApiError extends Error {
   constructor(message, status, payload) {

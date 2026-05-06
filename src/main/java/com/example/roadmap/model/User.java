@@ -45,6 +45,12 @@ public class User {
   @Column(nullable = false, unique = true, length = 160)
   private String email;
 
+  @Column(unique = true, length = 80)
+  private String login;
+
+  @Column(length = 120)
+  private String password;
+
   @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
   private Set<RoadMap> roadMaps = new LinkedHashSet<>();
 

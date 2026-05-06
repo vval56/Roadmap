@@ -19,6 +19,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class DataInitializer implements CommandLineRunner {
 
   private static final String DEMO_OWNER_EMAIL = "vladislav@example.com";
+  private static final String DEMO_OWNER_LOGIN = "admin";
+  private static final String DEMO_OWNER_PASSWORD = "admin123";
+  private static final String DEMO_USER_EMAIL = "user@example.com";
+  private static final String DEMO_USER_LOGIN = "user";
+  private static final String DEMO_USER_PASSWORD = "user123";
   private static final String CATALOG_PREFIX = "Roadmap: ";
 
   private final UserRepository userRepository;
@@ -36,25 +42,97 @@ public class DataInitializer implements CommandLineRunner {
   private final RoadMapRepository roadMapRepository;
   private final RoadMapItemRepository roadMapItemRepository;
   private final CommentRepository commentRepository;
+  private final JdbcTemplate jdbcTemplate;
 
   @Override
   public void run(String... args) {
+    cleanupGeneratedTags();
     User demoOwner = ensureDemoOwner();
+    ensureRegularUser();
     Map<String, Tag> tagsByName = ensureTags();
 
     seedJavaBackendRoadmap(demoOwner, tagsByName);
     seedCatalogRoadmaps(demoOwner, tagsByName);
   }
 
+  private void cleanupGeneratedTags() {
+    jdbcTemplate.update(
+        """
+            delete from roadmap_item_tag
+            where tag_id in (
+                select id
+                from tags
+                where lower(name) like 'tag-check-%'
+                   or lower(name) like 'tmgr-tag-%'
+                   or name ~* '^tag-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            )
+            """
+    );
+
+    jdbcTemplate.update(
+        """
+            delete from tags
+            where lower(name) like 'tag-check-%'
+               or lower(name) like 'tmgr-tag-%'
+               or name ~* '^tag-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            """
+    );
+  }
+
   private User ensureDemoOwner() {
-    return userRepository.findByEmailIgnoreCase(DEMO_OWNER_EMAIL)
+    User user = userRepository.findByEmailIgnoreCase(DEMO_OWNER_EMAIL)
         .orElseGet(() -> {
-          User user = new User();
-          user.setFirstName("Vladislav");
-          user.setLastName("Mogilny");
-          user.setEmail(DEMO_OWNER_EMAIL);
-          return userRepository.save(user);
+          User entity = new User();
+          entity.setFirstName("Vladislav");
+          entity.setLastName("Mogilny");
+          entity.setEmail(DEMO_OWNER_EMAIL);
+          return entity;
         });
+
+    boolean changed = false;
+    if (user.getLogin() == null || user.getLogin().isBlank()) {
+      user.setLogin(DEMO_OWNER_LOGIN);
+      changed = true;
+    }
+    if (user.getPassword() == null || user.getPassword().isBlank()) {
+      user.setPassword(DEMO_OWNER_PASSWORD);
+      changed = true;
+    }
+    if (user.getId() == null || changed) {
+      return userRepository.save(user);
+    }
+    return user;
+  }
+
+  private User ensureRegularUser() {
+    User user = userRepository.findByEmailIgnoreCase(DEMO_USER_EMAIL)
+        .or(() -> userRepository.findByLoginIgnoreCase(DEMO_USER_LOGIN))
+        .orElseGet(() -> {
+          User entity = new User();
+          entity.setFirstName("Regular");
+          entity.setLastName("User");
+          entity.setEmail(DEMO_USER_EMAIL);
+          return entity;
+        });
+
+    boolean changed = false;
+    if (!DEMO_USER_EMAIL.equalsIgnoreCase(user.getEmail())) {
+      user.setEmail(DEMO_USER_EMAIL);
+      changed = true;
+    }
+    if (!DEMO_USER_LOGIN.equalsIgnoreCase(user.getLogin())) {
+      user.setLogin(DEMO_USER_LOGIN);
+      changed = true;
+    }
+    if (!DEMO_USER_PASSWORD.equals(user.getPassword())) {
+      user.setPassword(DEMO_USER_PASSWORD);
+      changed = true;
+    }
+
+    if (user.getId() == null || changed) {
+      return userRepository.save(user);
+    }
+    return user;
   }
 
   private Map<String, Tag> ensureTags() {
