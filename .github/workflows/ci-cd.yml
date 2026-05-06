@@ -9,17 +9,20 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
-  build-test:
-    name: Build and Test
+  backend-test:
+    name: backend-test
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -28,8 +31,61 @@ jobs:
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
 
-      - name: Run build and tests
-        run: ./mvnw -B clean verify
+      - name: Run backend tests
+        run: ./mvnw -B test
+
+  backend-build:
+    name: backend-build
+    runs-on: ubuntu-latest
+    needs: backend-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
+
+      - name: Build backend jar
+        run: ./mvnw -B -DskipTests clean package
+
+  frontend-build:
+    name: frontend-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: |
+          npm ci --prefix frontend
+          npm run build --prefix frontend
+
+  docker-build:
+    name: docker-build
+    runs-on: ubuntu-latest
+    needs:
+      - backend-build
+      - frontend-build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
       - name: Build backend Docker image
         run: docker build -t roadmap-backend:ci .
@@ -37,10 +93,58 @@ jobs:
       - name: Build frontend Docker image
         run: docker build -f frontend/Dockerfile -t roadmap-frontend:ci frontend
 
-  deploy:
-    name: Deploy to Railway + Healthcheck
+  docker-smoke:
+    name: docker-smoke
     runs-on: ubuntu-latest
-    needs: build-test
+    needs: docker-build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Start compose stack
+        run: |
+          cp .env.example .env
+          docker compose up -d --build
+
+      - name: Wait for local backend health
+        run: |
+          set -euo pipefail
+          ATTEMPTS=30
+          SLEEP_SECONDS=6
+          for i in $(seq 1 "$ATTEMPTS"); do
+            CODE="$(curl -s -o /tmp/local-health.json -w "%{http_code}" http://localhost:8080/actuator/health || true)"
+            if [ "$CODE" = "200" ] && grep -Eq '"status"[[:space:]]*:[[:space:]]*"UP"' /tmp/local-health.json; then
+              echo "Local healthcheck passed on attempt $i"
+              cat /tmp/local-health.json
+              exit 0
+            fi
+            echo "Attempt $i/$ATTEMPTS: local backend not ready (http=$CODE)"
+            sleep "$SLEEP_SECONDS"
+          done
+          echo "Local healthcheck failed."
+          docker compose logs app || true
+          exit 1
+
+      - name: API smoke test
+        run: |
+          set -euo pipefail
+          CODE="$(curl -s -o /tmp/local-roadmaps.json -w "%{http_code}" http://localhost:8080/api/roadmaps || true)"
+          if [ "$CODE" != "200" ]; then
+            echo "Smoke request failed (http=$CODE)"
+            cat /tmp/local-roadmaps.json || true
+            docker compose logs app || true
+            exit 1
+          fi
+
+      - name: Stop compose stack
+        if: always()
+        run: docker compose down -v
+
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    needs: docker-smoke
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -53,12 +157,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Validate CI/CD variables
         run: |
