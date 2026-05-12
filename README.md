@@ -132,6 +132,9 @@ PostgreSQL:
 - `http://localhost:8080`
 - healthcheck: `http://localhost:8080/actuator/health`
 
+Frontend:
+- `http://localhost:3000`
+
 ## Запуск приложения
 ```bash
 ./mvnw spring-boot:run
@@ -169,6 +172,8 @@ docker run --rm -p 8080:8080 \
 - `SPRING_JPA_HIBERNATE_DDL_AUTO`
 - `PORT`
 - `JAVA_OPTS`
+- `FRONTEND_PORT`
+- `VITE_API_BASE_URL`
 
 Шаблон расположен в `.env.example`.
 
