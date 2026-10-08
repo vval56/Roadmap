@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="RoadmapEDU is a student-built learning roadmap platform for software developers."
+    />
+    <title>RoadmapEDU | Learning paths for developers</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #101827;
+        color: #edf2f7;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; background: linear-gradient(145deg, #101827, #172a46); }
+      main { width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
+      nav { display: flex; justify-content: space-between; align-items: center; padding: 28px 0; }
+      .brand { color: #fff; font-weight: 800; letter-spacing: .02em; }
+      nav a, .text-link { color: #a9c7ff; text-decoration: none; }
+      .hero { padding: 90px 0 100px; max-width: 760px; }
+      .eyebrow { color: #82d8c8; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; }
+      h1 { font-size: clamp(2.7rem, 8vw, 5.4rem); line-height: .98; margin: 18px 0 28px; }
+      h2 { font-size: 2rem; margin-top: 0; }
+      p { color: #bdc9d9; font-size: 1.12rem; line-height: 1.7; }
+      .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+      .button { border-radius: 10px; padding: 13px 18px; font-weight: 700; text-decoration: none; display: inline-block; }
+      .button-primary { background: #82d8c8; color: #10201f; }
+      .button-secondary { border: 1px solid #526a8d; color: #edf2f7; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding-bottom: 90px; }
+      .card { border: 1px solid #304666; border-radius: 14px; padding: 24px; background: rgba(21, 38, 64, .72); }
+      .card h3 { margin-top: 0; color: #fff; }
+      .card p { font-size: 1rem; margin-bottom: 0; }
+      footer { border-top: 1px solid #304666; padding: 26px 0 40px; color: #8fa2bd; font-size: .95rem; }
+      @media (max-width: 720px) {
+        .hero { padding: 55px 0 70px; }
+        .grid { grid-template-columns: 1fr; padding-bottom: 65px; }
+        nav { padding-top: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <div class="brand">RoadmapEDU</div>
+        <a href="mailto:hello@roadmapcli.me">hello@roadmapcli.me</a>
+      </nav>
+
+      <section class="hero">
+        <div class="eyebrow">Student-built · Bootstrapped · Education</div>
+        <h1>Learn software development with a clear roadmap.</h1>
+        <p>
+          RoadmapEDU is an independent student project that helps learners
+          organize technical topics, track progress, and find the next useful
+          step in their development journey.
+        </p>
+        <div class="actions">
+          <a class="button button-primary" href="https://github.com/vval56/Roadmap">View the project</a>
+          <a class="button button-secondary" href="mailto:hello@roadmapcli.me">Contact the founder</a>
+        </div>
+      </section>
+
+      <section class="grid" aria-label="About RoadmapEDU">
+        <article class="card">
+          <h3>For learners</h3>
+          <p>Break a large technical goal into practical topics and manageable learning steps.</p>
+        </article>
+        <article class="card">
+          <h3>Personal progress</h3>
+          <p>Keep roadmaps, statuses, and learning resources together instead of losing context.</p>
+        </article>
+        <article class="card">
+          <h3>Built in public</h3>
+          <p>The project started in February 2026 and is being developed openly as a student MVP.</p>
+        </article>
+      </section>
+
+      <footer>
+        RoadmapEDU is an independent, bootstrapped student project. © 2026 RoadmapEDU
+      </footer>
+    </main>
+  </body>
+</html>
