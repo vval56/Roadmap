@@ -266,6 +266,33 @@ docker compose up -d --build
 2. Railway: убедиться, что в backend нет старых фиксированных пар `roadmap_user/roadmap_pass`, а используются reference-переменные `${{Postgres.*}}`.
 3. После изменения переменных в Railway обязательно нажать `Deploy` (стейджинг переменных без deploy не применяется).
 
+## Бесплатный деплой без Railway и Azure (Render + Neon)
+
+В репозитории есть `render.yaml` для бесплатного Render Blueprint:
+- `roadmap-api` — Spring Boot backend из корневого `Dockerfile`;
+- `roadmap-web` — React frontend как бесплатный Static Site;
+- PostgreSQL не создаётся в Render, чтобы не потерять данные через 30 дней.
+
+Для базы создай бесплатный PostgreSQL-проект в [Neon](https://neon.tech), затем при создании Blueprint задай для backend:
+```env
+SPRING_DATASOURCE_URL=jdbc:postgresql://<neon-host>/<database>?sslmode=require
+SPRING_DATASOURCE_USERNAME=<neon-user>
+SPRING_DATASOURCE_PASSWORD=<neon-password>
+```
+
+Для frontend задай `VITE_API_BASE_URL` после создания backend:
+```env
+VITE_API_BASE_URL=https://<roadmap-api-domain>.onrender.com/api
+```
+
+Порядок запуска:
+1. В Render выбери **New → Blueprint**, подключи этот репозиторий и файл `render.yaml`.
+2. Введи секреты Neon для `roadmap-api` и URL backend для `roadmap-web`.
+3. После первого деплоя проверь `https://<backend-domain>.onrender.com/actuator/health`.
+4. Если URL backend был сгенерирован после создания Blueprint, обнови `VITE_API_BASE_URL` у `roadmap-web` и сделай redeploy frontend.
+
+Render Free может усыплять backend после простоя. Бесплатная база Render намеренно не используется: она истекает через 30 дней, тогда как Neon Free предназначен для небольших учебных проектов.
+
 ## Ключевые endpoint'ы
 
 CRUD:
